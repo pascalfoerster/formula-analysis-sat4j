@@ -31,6 +31,8 @@ import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -56,24 +58,32 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
         ABooleanAssignment variablesOfInterest = VARIABLES_OF_INTEREST.get(dependencyList);
+        int variableSize = clauseList.getVariableCount();
 
-        ABooleanAssignment variables = variablesOfInterest.isEmpty()
+
+        ABooleanAssignment hiddenVariables = variablesOfInterest.isEmpty()
                 ? new BooleanAssignment(
                         IntStream.rangeClosed(1, clauseList.getVariableCount()).toArray())
                 : variablesOfInterest;
+        BooleanClauseList updateClauseList = new BooleanClauseList(clauseList);
+        for (final BooleanClause clause: new BooleanClauseList(updateClauseList)) {
+            int[] removeLiterals = clause.retainAllVariables(hiddenVariables.get());
+            int[] newLiterals = clause.removeAllVariables(hiddenVariables.get());
+            if(newLiterals.length !=  clause.size()) {
+                for (int i = 0 ;  i < removeLiterals.length ; i++) {
+                    removeLiterals[i] = removeLiterals[i] > 0
+                            ?  variableSize + hiddenVariables.indexOfVariable(removeLiterals[i]) + 1
+                            : -variableSize - hiddenVariables.indexOfVariable(-removeLiterals[i]) - 1;
+                }
+                updateClauseList.add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));
+            }
+        }
 
         final ExpandableIntegerList resultList = new ExpandableIntegerList();
-        variableLoop:
-        for (final int variable : variables.get()) {
-            BooleanClauseList modClauseList = new BooleanClauseList(clauseList.getVariableCount());
-            for (final BooleanClause clause : clauseList.getAll()) {
-                final int[] newLiterals = clause.removeAllVariables(variable);
-                if (newLiterals.length > 0) {
-                    modClauseList.add(new BooleanClause(newLiterals));
-                } else {
-                    continue variableLoop;
-                }
-            }
+        for (final int variable : hiddenVariables.get()) {
+            BooleanClauseList modClauseList = new BooleanClauseList(updateClauseList);
+            modClauseList.add(new BooleanClause(variable));
+            modClauseList.add(new BooleanClause(-variableSize-hiddenVariables.indexOfVariable(variable)-1));
             final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(modClauseList);
 
             final Result<Boolean> hasSolution = modSolver.hasSolution();
