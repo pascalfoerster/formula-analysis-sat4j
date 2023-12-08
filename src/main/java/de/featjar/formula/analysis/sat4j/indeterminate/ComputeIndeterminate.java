@@ -26,7 +26,6 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.ExpandableIntegerList;
 import de.featjar.base.data.Result;
-import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
@@ -57,7 +56,7 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
-        ABooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
+        BooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
         int variableSize = clauseList.getVariableCount();
         if(hiddenVariables.isEmpty()) return Result.of(new BooleanAssignment());
         BooleanClauseList updateClauseList = new BooleanClauseList(clauseList);
