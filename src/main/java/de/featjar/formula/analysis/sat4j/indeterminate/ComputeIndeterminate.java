@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatureIDE/FeatJAR-formula-analysis-sat4j> for further information.
  */
-package de.featjar.formula.analysis.sat4j;
+package de.featjar.formula.analysis.sat4j.indeterminate;
 
 import de.featjar.base.computation.ComputeConstant;
 import de.featjar.base.computation.Dependency;
@@ -30,9 +30,9 @@ import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
+import de.featjar.formula.analysis.sat4j.ASAT4JAnalysis;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -57,14 +57,9 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
-        ABooleanAssignment variablesOfInterest = VARIABLES_OF_INTEREST.get(dependencyList);
+        ABooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
         int variableSize = clauseList.getVariableCount();
-
-
-        ABooleanAssignment hiddenVariables = variablesOfInterest.isEmpty()
-                ? new BooleanAssignment(
-                        IntStream.rangeClosed(1, clauseList.getVariableCount()).toArray())
-                : variablesOfInterest;
+        if(hiddenVariables.isEmpty()) return Result.of(new BooleanAssignment());
         BooleanClauseList updateClauseList = new BooleanClauseList(clauseList);
         for (final BooleanClause clause: new BooleanClauseList(updateClauseList)) {
             int[] removeLiterals = clause.retainAllVariables(hiddenVariables.get());
@@ -78,7 +73,6 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
                 updateClauseList.add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));
             }
         }
-
         final ExpandableIntegerList resultList = new ExpandableIntegerList();
         for (final int variable : hiddenVariables.get()) {
             BooleanClauseList modClauseList = new BooleanClauseList(updateClauseList);
