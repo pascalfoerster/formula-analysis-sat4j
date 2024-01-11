@@ -182,7 +182,7 @@ public class TWiseStatisticGenerator extends ASAT4JAnalysis<CoverageStatistic> {
 
                             for (int k = 0; k < t2; k++) {
                                 int literal = mask[k] ? (c[k] + 1) : -(c[k] + 1);
-                                if (deadCoreFeatures.containsAnyVariable(literal)) {
+                                if (deadCoreFeatures.containsAnyVariable(Math.abs(literal))) {
                                     i = k;
                                     for (; i >= 0; i--) {
                                         final int ci = ++c[i];
