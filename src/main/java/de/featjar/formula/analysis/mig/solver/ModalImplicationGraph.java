@@ -215,6 +215,16 @@ public class ModalImplicationGraph {
                 }
             }
         }
+
+        public boolean strongLink(int literal1, int literal2){
+            int[] matchPos = Arrays.stream(strong[getVertexIndex(literal1)]).filter(n -> Math.abs(n) == literal2).toArray();
+            int[] matchNeg = Arrays.stream(strong[getVertexIndex(-literal1)]).filter(n -> Math.abs(n) == literal2).toArray();
+            if(matchPos.length == 1 && matchNeg.length ==1 && (matchPos[0] + matchNeg[0] == 0) ){
+                return Arrays.stream(strong[getVertexIndex(matchPos[0])]).anyMatch(lit -> lit == literal1)
+                        && Arrays.stream(strong[getVertexIndex(matchNeg[0])]).anyMatch(lit -> lit == -literal1);
+            }
+            return false;
+        }
     }
 
     public static int getVertexIndex(int literal) {
