@@ -120,7 +120,7 @@ public class DirtyClause extends BooleanClause {
     }
 
     boolean computeRelevance(DirtyFeature[] map) {
-        for (final int literal : array) {
+        for (final int literal : elements) {
             final DirtyFeature df = map[Math.abs(literal)];
             if (df != null) {
                 relevance++;
@@ -131,13 +131,13 @@ public class DirtyClause extends BooleanClause {
                 }
             }
         }
-        return ((relevance > 0) && (relevance < array.length));
+        return ((relevance > 0) && (relevance < elements.length));
     }
 
     public boolean delete(DirtyFeature[] map) {
-        if (array.length > 1) {
-            final boolean mixed = ((relevance > 0) && (relevance < array.length));
-            for (final int literal : array) {
+        if (elements.length > 1) {
+            final boolean mixed = ((relevance > 0) && (relevance < elements.length));
+            for (final int literal : elements) {
                 final DirtyFeature df = map[Math.abs(literal)];
                 if (df != null) {
                     if (literal > 0) {
@@ -152,7 +152,7 @@ public class DirtyClause extends BooleanClause {
             }
             return mixed;
         } else {
-            for (final int literal : array) {
+            for (final int literal : elements) {
                 final DirtyFeature df = map[Math.abs(literal)];
                 if (df != null) {
                     if (literal > 0) {

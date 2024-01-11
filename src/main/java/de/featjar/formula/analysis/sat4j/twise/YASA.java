@@ -122,14 +122,14 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
         public PartialConfiguration(PartialConfiguration config) {
             super(config);
             id = config.id;
-            visitor = config.visitor.getVisitorProvider().new Visitor(config.visitor, array);
+            visitor = config.visitor.getVisitorProvider().new Visitor(config.visitor, elements);
             solverSolutions = config.solverSolutions != null ? new ArrayList<>(config.solverSolutions) : null;
         }
 
         public PartialConfiguration(int id, ModalImplicationGraph mig, int... newliterals) {
             super(new int[mig.size()], false);
             this.id = id;
-            visitor = mig.getVisitor(this.array);
+            visitor = mig.getVisitor(this.elements);
             solverSolutions = new ArrayList<>();
             visitor.propagate(newliterals);
         }
