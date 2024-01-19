@@ -97,7 +97,6 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
                 }
             });
         });
-        //TODO not working
         result = (ArrayList<BiImplies>) result.stream().filter((biIm) -> existing_BiImplies.stream().noneMatch(biImEx -> notRelevantBiImplies(biImEx,biIm))).collect(Collectors.toList());
         return Result.of(result);
     }

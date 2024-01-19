@@ -5,6 +5,7 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
+import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.structure.IExpression;
@@ -12,9 +13,11 @@ import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.And;
 import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Not;
+import de.featjar.formula.structure.formula.connective.Reference;
 import de.featjar.formula.structure.formula.predicate.Literal;
 import de.featjar.formula.structure.term.value.IValue;
 import de.featjar.formula.structure.term.value.Variable;
+import de.featjar.formula.visitor.CoreDeadSimplifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,7 +55,9 @@ public class PreprocessIffV2 extends IndeterminatePreprocess{
         if(!deadVariables.isEmpty() || ! coreFeatures.isEmpty()){
             hiddenVariables = new BooleanAssignment(hiddenVariables.stream().filter((hidden ) ->
                     !deadVariables.contains(hidden) && ! coreFeatures.contains(hidden)).toArray());
-            //TODO simplify formal with dead and core feature
+            BooleanAssignment assignment = coreFeatures.addAll(deadVariables.inverse());
+            Result<IFormula> formulaResult = Reference.mutateClone(formula, reference -> Trees.traverse(reference,new CoreDeadSimplifier(assignment.toValueName(mapping))));
+            if(formulaResult.isPresent()) formula = formulaResult.get();
         }
         for(IExpression child :formula.getChildren()){
             if(child instanceof BiImplies){

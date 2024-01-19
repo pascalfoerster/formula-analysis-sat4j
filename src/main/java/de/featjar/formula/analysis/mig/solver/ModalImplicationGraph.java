@@ -22,7 +22,9 @@ package de.featjar.formula.analysis.mig.solver;
 
 import de.featjar.formula.analysis.RuntimeContradictionException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Adjacency list implementation based on arrays. Intended to use for faster
@@ -225,6 +227,23 @@ public class ModalImplicationGraph {
             }
             return false;
         }
+        public boolean weakLink(int lit, int[] weakLink){
+            return Arrays.stream(weakLink).allMatch(x -> Arrays.stream(strong[getVertexIndex(lit)]).anyMatch(y ->  -x == y));
+        }
+        public List<int[]> weakClauses(){
+            List<int[]> weakClauses = new ArrayList<>();
+            int startIndex = 0;
+            for(int index = 0; index < clauseLengths.length; index++){
+                int length = clauseLengths[index];
+                int[] clause =  new int[length];
+                for(int clauseIndex = 0; clauseIndex <  length; clauseIndex++){
+                    clause[clauseIndex] = clauses[startIndex+clauseIndex];
+                }
+                weakClauses.add(clause);
+                startIndex+=length;
+            }
+            return weakClauses;
+        }
     }
 
     public static int getVertexIndex(int literal) {
@@ -259,7 +278,7 @@ public class ModalImplicationGraph {
     public int[] getCore() {
         return core;
     }
-
+    public int[] getClauses() {return clauses;}
     public int size() {
         return size;
     }
