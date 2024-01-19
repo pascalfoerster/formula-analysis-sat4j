@@ -21,10 +21,15 @@
 package de.featjar;
 
 import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Pair;
 import de.featjar.base.io.IO;
 import de.featjar.formula.io.FormulaFormats;
+import de.featjar.formula.io.HiddenFormulaFormats;
 import de.featjar.formula.structure.formula.IFormula;
+import de.featjar.formula.structure.formula.connective.BiImplies;
+
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Common {
 
@@ -36,7 +41,10 @@ public class Common {
         return IO.load(Paths.get("src/test/resources/" + modelPath), FormulaFormats.getInstance())
                 .orElseThrow();
     }
-
+    public static Pair<IFormula,Pair<List<String>,List<BiImplies>>> loadHiddenModel(String modelPath) {
+          return IO.load(Paths.get("src/test/resources/" + modelPath), HiddenFormulaFormats.getInstance())
+                .orElseThrow();
+    }
     public IFormula load(String modelPath) {
         return loadModel(modelPath);
     }
