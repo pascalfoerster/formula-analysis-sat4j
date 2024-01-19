@@ -20,6 +20,9 @@
  */
 package de.featjar.formula.analysis.sat4j.solver;
 
+import de.featjar.base.computation.ResourcePool;
+import de.featjar.base.data.Result;
+import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.sat4j.solver.ISelectionStrategy.FixedStrategy;
 import de.featjar.formula.analysis.sat4j.solver.ISelectionStrategy.InverseFixedStrategy;
@@ -29,7 +32,15 @@ import de.featjar.formula.analysis.sat4j.solver.strategy.FixedOrderHeap;
 import de.featjar.formula.analysis.sat4j.solver.strategy.FixedOrderHeap2;
 import de.featjar.formula.analysis.sat4j.solver.strategy.RandomSelectionStrategy;
 import de.featjar.formula.analysis.sat4j.solver.strategy.UniformRandomSelectionStrategy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.minisat.core.IOrder;
 import org.sat4j.minisat.core.Solver;
@@ -46,6 +57,31 @@ import org.sat4j.minisat.orders.VarOrderHeap;
 public class SAT4JSolutionSolver extends SAT4JSolver {
     protected final int[] order;
     protected ISelectionStrategy strategy;
+
+    public static List<Result<Boolean>> parallelSolve(
+            Supplier<SAT4JSolutionSolver> solverGenerator, List<BooleanClause> problems) {
+        final int threadCount = Runtime.getRuntime().availableProcessors() - 1;
+        ResourcePool<SAT4JSolutionSolver> solverPool = new ResourcePool<>(solverGenerator, threadCount);
+        ExecutorService threadPool = Executors.newFixedThreadPool(threadCount);
+
+        List<Future<Result<Boolean>>> futureResults = new ArrayList<>(problems.size());
+        for (BooleanClause booleanClause : problems) {
+            futureResults.add(threadPool.submit(() -> solverPool
+                    .use(solver -> {
+                        return solver.hasSolution(booleanClause);
+                    })
+                    .unwrap()));
+        }
+        return futureResults.stream()
+                .map(future -> {
+                    try {
+                        return future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        return Result.<Boolean>empty(e);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
 
     public SAT4JSolutionSolver(BooleanClauseList clauseList) {
         super(clauseList);

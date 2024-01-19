@@ -20,7 +20,11 @@
  */
 package de.featjar.formula.transform;
 
-import de.featjar.base.computation.*;
+import de.featjar.base.computation.AComputation;
+import de.featjar.base.computation.ComputeConstant;
+import de.featjar.base.computation.Dependency;
+import de.featjar.base.computation.IComputation;
+import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
 import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
@@ -45,7 +49,7 @@ import java.util.stream.Collectors;
  */
 public class CNFSlicer extends AComputation<BooleanClauseList> {
     protected static final Dependency<BooleanClauseList> CNF = Dependency.newDependency(BooleanClauseList.class);
-    protected static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
+    public static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
             Dependency.newDependency(BooleanAssignment.class);
 
     protected static final Comparator<ABooleanAssignment> lengthComparator =
@@ -77,17 +81,9 @@ public class CNFSlicer extends AComputation<BooleanClauseList> {
     protected int dirtyListNegIndex = 0;
     protected int newDirtyListDelIndex = 0;
 
-    public CNFSlicer(BooleanClauseList cnf, BooleanAssignment dirty) {
-        super(Computations.of(cnf), Computations.of(new BooleanAssignment(dirty)));
+    public CNFSlicer(IComputation<BooleanClauseList> booleanClauseList) {
+        super(booleanClauseList, new ComputeConstant<>(new BooleanAssignment()));
     }
-
-    protected CNFSlicer(CNFSlicer other) {
-        super(other);
-    }
-
-    //    public CNFSlicer(Collection<String> dirtyVariableNames, TermMap termMap) {
-    //        dirtyVariables = SortedIntegerList.getAbsoluteValuesOfIntegers(termMap, dirtyVariableNames);
-    //    }
 
     int cr = 0, cnr = 0, dr = 0, dnr = 0;
 
