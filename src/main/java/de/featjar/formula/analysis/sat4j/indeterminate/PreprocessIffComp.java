@@ -18,6 +18,7 @@ import de.featjar.formula.structure.term.value.Variable;
 import de.featjar.formula.visitor.CoreDeadSimplifier;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
 
     private BooleanAssignment hiddenVariables;
     private VariableMap mapping;
-    private ArrayList<Pair<String,int[]>> definedFormula = new ArrayList<>();
+    private ArrayList<Pair<String,List<Integer>>> definedFormula = new ArrayList<>();
     private int expressionMaxLength;
     public PreprocessIffComp(IComputation<IFormula> formula) {
         super(formula, Computations.of(new BooleanAssignment()),Computations.of(new BooleanAssignment()),Computations.of(2));
@@ -74,8 +75,8 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
                 }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){
                     checkLiteralIsUnique((Literal) leftExpression.getChildren().get(0),rightExpression);
                 }else {
-                    Pair<String,int[]> expr = interestingExpr(leftExpression,false);
-                    if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && Arrays.equals(pair.getValue(),expr.getValue()))){
+                    Pair<String,List<Integer>> expr = interestingExpr(leftExpression,false);
+                    if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
                         alreadyChecked = true;
                         checkUniqueExprOtherSide(rightExpression);
                     }
@@ -85,8 +86,8 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
                 }else if(rightExpression instanceof  Not && rightExpression.getChildren().get(0) instanceof Literal){
                     checkLiteralIsUnique((Literal) rightExpression.getChildren().get(0),leftExpression);
                 }else if(!alreadyChecked){
-                    Pair<String,int[]> expr = interestingExpr(rightExpression,false);
-                    if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && Arrays.equals(pair.getValue(),expr.getValue()))){
+                    Pair<String,List<Integer>> expr = interestingExpr(rightExpression,false);
+                    if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
                         checkUniqueExprOtherSide(leftExpression);
                     }
                 }
@@ -115,13 +116,13 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
 
         if(hiddenVariables.contains(id)){
 
-            Pair<String,int[]> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
             Set<Integer> removedVariables = new HashSet<>();
             if(expr != null) {
                 definedFormula.forEach(pair ->{
                     if(pair.getKey().equals(expr.getKey())){
-                        if(Arrays.stream(pair.getValue()).allMatch(ele -> Arrays.stream(expr.getValue()).anyMatch(ele2 -> ele == ele2) )){
-                            Arrays.stream(pair.getValue()).forEach(removedVariables::add);
+                        if(pair.getValue().stream().allMatch(ele -> expr.getValue().stream().anyMatch(ele2 -> Objects.equals(ele, ele2)) )){
+                            removedVariables.addAll(pair.getValue());
                         }
                     }
                 });
@@ -141,7 +142,7 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
             hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
 
         }else if(variables.size() > 1 ){
-            Pair<String,int[]> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
             if(expr!=null) definedFormula.add(expr);
         }
     }
@@ -153,7 +154,7 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
             int id =  unwrapLiteral((Literal) otherExpression.getChild(0).get(), mapping);
             if(hiddenVariables.contains(id))  hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
         }else{
-            Pair<String,int[]> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
             if( expr!= null) definedFormula.add(expr);
         }
     }
@@ -162,54 +163,48 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
      * Check if Expression is simple enough to be relevant for this algorithm and return as cnf.
      *
      */
-    private Pair<String,int[]> interestingExpr(IExpression expression,boolean notAnd){
-        int[] result;
+    private Pair<String,List<Integer>> interestingExpr(IExpression expression,boolean notAnd){
+       List<Integer> result = new ArrayList<>();
         if( expression.getChildrenCount() <= expressionMaxLength ) {
             if ((expression instanceof And && !notAnd) || expression instanceof Or) {
-                result = new int[expression.getChildrenCount()];
-                int index = 0;
                 for (IExpression child : expression.getChildren()) {
                     if (child instanceof Literal) {
-                        result[index] = unwrapLiteral((Literal) child, mapping);
+                        result.add( unwrapLiteral((Literal) child, mapping));
                     } else if (child instanceof Not && child.getChildren().get(0) instanceof Literal) {
-                        result[index] = -unwrapLiteral((Literal) child.getChildren().get(0), mapping);
+                        result.add( -unwrapLiteral((Literal) child.getChildren().get(0), mapping));
                     }else if(expression instanceof Or){
-                        Pair<String,int[]> resultChild = interestingExpr(child,true);
+                        Pair<String,List<Integer>> resultChild = interestingExpr(child,true);
                         if( resultChild == null) return null;
-                        result = IntStream.concat(Arrays.stream(result), Arrays.stream(resultChild.getValue())).toArray();
-                        index+=resultChild.getValue().length;
+                        result.addAll(resultChild.getValue());
                     }
-                    index++;
                 }
-                if(!notAnd) result = Arrays.stream(result).sorted().toArray();
+                if(!notAnd) result = result.stream().sorted().collect(Collectors.toList());
                 if(expression instanceof And) return new Pair<>("and",result);
                 return new Pair<>("or",result);
             }  else if (expression instanceof Implies) {
-                result = new int[2];
                 IExpression leftExpression = ((Implies) expression).getLeftExpression();
                 IExpression rightExpression = ((Implies) expression).getRightExpression();
                 int[] leftSide = null, rightSide = null;
                 if(leftExpression instanceof Literal ){
-                    result[0]= -unwrapLiteral((Literal)leftExpression,mapping );
+                    result.add( -unwrapLiteral((Literal)leftExpression,mapping ));
                 }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){
-                    result[0] = unwrapLiteral((Literal)leftExpression.getChildren().get(0),mapping );
+                    result.add( unwrapLiteral((Literal)leftExpression.getChildren().get(0),mapping ));
                 }else {
-                    Pair<String,int[]> resultChild = interestingExpr(leftExpression,true);
+                    Pair<String,List<Integer>> resultChild = interestingExpr(leftExpression,true);
                     if( resultChild == null) return null;
-                    leftSide = resultChild.getValue();
+                    result.addAll(resultChild.getValue());
                 }
                 if( rightExpression instanceof Literal){
-                    result[1] = unwrapLiteral((Literal)rightExpression,mapping );
+                    result.add( unwrapLiteral((Literal)rightExpression,mapping ));
                 }else if(rightExpression instanceof  Not && rightExpression.getChildren().get(0) instanceof Literal){
-                    result[1] = -unwrapLiteral((Literal)rightExpression.getChildren().get(0),mapping );
+                    result.add(-unwrapLiteral((Literal)rightExpression.getChildren().get(0),mapping ));
                 }else {
-                    Pair<String,int[]> resultChild = interestingExpr(rightExpression,true);
+                    Pair<String,List<Integer>> resultChild = interestingExpr(rightExpression,true);
                     if( resultChild == null) return null;
-                    rightSide = resultChild.getValue();
+                    result.addAll(resultChild.getValue());
                 }
-                if(leftSide != null) result = IntStream.concat(Arrays.stream(result), Arrays.stream(leftSide)).toArray();
-                if(rightSide != null) result = IntStream.concat(Arrays.stream(result), Arrays.stream(rightSide)).toArray();
-                if(!notAnd) Arrays.stream(result).sorted().toArray();
+
+                if(!notAnd) result = result.stream().sorted().collect(Collectors.toList());
                 return new Pair<>("or",result);
             }
 
