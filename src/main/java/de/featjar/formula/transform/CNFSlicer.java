@@ -20,15 +20,15 @@
  */
 package de.featjar.formula.transform;
 
-import de.featjar.base.computation.AComputation;
-import de.featjar.base.computation.Dependency;
-import de.featjar.base.computation.Progress;
+import de.featjar.base.computation.*;
 import de.featjar.base.data.Result;
 import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
+import de.featjar.formula.structure.formula.connective.And;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,8 +77,8 @@ public class CNFSlicer extends AComputation<BooleanClauseList> {
     protected int dirtyListNegIndex = 0;
     protected int newDirtyListDelIndex = 0;
 
-    public CNFSlicer(BooleanAssignment dirtyVariables) {
-        this.dirtyVariables = dirtyVariables;
+    public CNFSlicer(BooleanClauseList cnf, BooleanAssignment dirty) {
+        super(Computations.of(cnf), Computations.of(new BooleanAssignment(dirty)));
     }
 
     protected CNFSlicer(CNFSlicer other) {
