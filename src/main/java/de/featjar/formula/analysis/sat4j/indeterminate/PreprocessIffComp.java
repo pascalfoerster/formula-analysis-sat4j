@@ -70,10 +70,10 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
                 IExpression leftExpression = implies.getLeftExpression();
                 IExpression rightExpression = implies.getRightExpression();
                 boolean alreadyChecked = false;
-                if(leftExpression instanceof Literal ){
-                    checkLiteralIsUnique((Literal) leftExpression,rightExpression);
-                }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){
-                    checkLiteralIsUnique((Literal) leftExpression.getChildren().get(0),rightExpression);
+                Literal leftLiteral = getLiteral(leftExpression);
+                Literal rightLiteral = getLiteral(rightExpression);
+                if (leftLiteral != null ) {
+                    checkLiteralIsUnique(leftLiteral,rightExpression);
                 }else {
                     Pair<String,List<Integer>> expr = interestingExpr(leftExpression,false);
                     if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
@@ -81,10 +81,8 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
                         checkUniqueExprOtherSide(rightExpression);
                     }
                 }
-                if( rightExpression instanceof Literal){
-                    checkLiteralIsUnique((Literal) rightExpression,leftExpression);
-                }else if(rightExpression instanceof  Not && rightExpression.getChildren().get(0) instanceof Literal){
-                    checkLiteralIsUnique((Literal) rightExpression.getChildren().get(0),leftExpression);
+                if (rightLiteral != null) {
+                    checkLiteralIsUnique(rightLiteral,leftExpression);
                 }else if(!alreadyChecked){
                     Pair<String,List<Integer>> expr = interestingExpr(rightExpression,false);
                     if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
@@ -147,12 +145,10 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
         }
     }
     private void checkUniqueExprOtherSide(IExpression otherExpression) {
-        if(otherExpression instanceof Literal ){
-            int id =  unwrapLiteral((Literal) otherExpression, mapping);
+        Literal literal = getLiteral(otherExpression);
+        if(literal != null){
+            int id =  unwrapLiteral(literal, mapping);
             if(hiddenVariables.contains(id)) hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
-        }else if(otherExpression instanceof  Not && otherExpression.getChildren().get(0) instanceof Literal){
-            int id =  unwrapLiteral((Literal) otherExpression.getChild(0).get(), mapping);
-            if(hiddenVariables.contains(id))  hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
         }else{
             Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
             if( expr!= null) definedFormula.add(expr);
@@ -184,7 +180,6 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
             }  else if (expression instanceof Implies) {
                 IExpression leftExpression = ((Implies) expression).getLeftExpression();
                 IExpression rightExpression = ((Implies) expression).getRightExpression();
-                int[] leftSide = null, rightSide = null;
                 if(leftExpression instanceof Literal ){
                     result.add( -unwrapLiteral((Literal)leftExpression,mapping ));
                 }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){

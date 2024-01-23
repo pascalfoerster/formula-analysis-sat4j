@@ -6,6 +6,7 @@ import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.structure.IExpression;
+import de.featjar.formula.structure.formula.connective.Not;
 import de.featjar.formula.structure.formula.predicate.Literal;
 import de.featjar.formula.structure.term.value.Variable;
 
@@ -39,5 +40,13 @@ abstract public class IndeterminatePreprocess extends AComputation<BooleanAssign
     protected int getMapping(String name, VariableMap mapping){
         Result<Integer> integerResult = mapping.get(name);
         return integerResult.isEmpty() ? 0 : integerResult.get();
+    }
+    protected Literal getLiteral(IExpression expression) {
+        if (expression instanceof Literal) {
+            return (Literal) expression;
+        }else if (expression instanceof Not &&  expression.getChildren().get(0) instanceof Literal) {
+            return (Literal) expression.getChildren().get(0);
+        }
+        return null;
     }
 }

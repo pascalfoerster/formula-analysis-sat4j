@@ -65,9 +65,11 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
                 BiImplies implies = (BiImplies) child;
                 IExpression leftExpression = implies.getLeftExpression();
                 IExpression rightExpression = implies.getRightExpression();
-                if (leftExpression instanceof Literal && hiddenVariables.contains(unwrapLiteral((Literal) leftExpression,mapping))) {
+                Literal leftLiteral = getLiteral(leftExpression);
+                Literal rightLiteral = getLiteral(rightExpression);
+                if (leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))) {
                     checkingBiImplies.add(implies);
-                }else if (rightExpression instanceof Literal&& hiddenVariables.contains(unwrapLiteral((Literal) rightExpression,mapping))) {
+                }else if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
                     checkingBiImplies.add(implies);
                 }
             }
@@ -86,12 +88,10 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
         for(BiImplies biImplies: checkingBiImplies){
             IExpression leftExpression = biImplies.getLeftExpression();
             IExpression rightExpression = biImplies.getRightExpression();
-            if(leftExpression instanceof Literal ){
-                checkLiteralIsUnique((Literal) leftExpression,rightExpression);
-            }
-            if( rightExpression instanceof Literal){
-                checkLiteralIsUnique((Literal) rightExpression,leftExpression);
-            }
+            Literal leftLiteral = getLiteral(leftExpression);
+            Literal rightLiteral = getLiteral(rightExpression);
+            if (leftLiteral != null ) checkLiteralIsUnique(leftLiteral,rightExpression);
+            if (rightLiteral != null) checkLiteralIsUnique(rightLiteral,leftExpression);
         }
         return Result.of(hiddenVariables);
     }
@@ -105,11 +105,12 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
     private float rankBiImplies(BiImplies biImplies,HashMap<Integer,Integer> rankHidden){
         IExpression leftExpression = biImplies.getLeftExpression();
         IExpression rightExpression = biImplies.getRightExpression();
-
-        if(leftExpression instanceof Literal && hiddenVariables.contains(unwrapLiteral((Literal) leftExpression,mapping))){
+        Literal leftLiteral = getLiteral(leftExpression);
+        Literal rightLiteral = getLiteral(rightExpression);
+        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
             List<Variable> variables = rightExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
-        } else if (rightExpression instanceof Literal && hiddenVariables.contains(unwrapLiteral((Literal) rightExpression,mapping))) {
+        } else if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
             List<Variable> variables = leftExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
         }
@@ -127,14 +128,16 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
     private void rankHiddenFeature(BiImplies biImplies, HashMap<Integer,Integer> rankHidden){
         IExpression leftExpression = biImplies.getLeftExpression();
         IExpression rightExpression = biImplies.getRightExpression();
-        if(leftExpression instanceof Literal && hiddenVariables.contains(unwrapLiteral((Literal) leftExpression,mapping))){
-            int id =  unwrapLiteral((Literal) leftExpression, mapping);
+        Literal leftLiteral = getLiteral(leftExpression);
+        Literal rightLiteral = getLiteral(rightExpression);
+        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
+            int id =  unwrapLiteral(leftLiteral, mapping);
             Integer value = rankHidden.get(id);
             if(value == null) value = -1;
             rankHidden.put(id,++value);
         }
-        if (rightExpression instanceof Literal && hiddenVariables.contains(unwrapLiteral((Literal) rightExpression,mapping))) {
-            int id =  unwrapLiteral((Literal) rightExpression, mapping);
+        if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
+            int id =  unwrapLiteral(rightLiteral, mapping);
             Integer value = rankHidden.get(id);
             if(value == null) value = -1;
             rankHidden.put(id,++value);

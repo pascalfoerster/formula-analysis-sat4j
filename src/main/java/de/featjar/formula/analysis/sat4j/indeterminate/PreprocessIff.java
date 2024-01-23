@@ -58,16 +58,10 @@ public class PreprocessIff extends IndeterminatePreprocess{
                 BiImplies implies = (BiImplies) child;
                 IExpression leftExpression = implies.getLeftExpression();
                 IExpression rightExpression = implies.getRightExpression();
-                if(leftExpression instanceof Literal ){
-                    checkLiteralIsUnique((Literal) leftExpression,rightExpression);
-                }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){
-                    checkLiteralIsUnique((Literal) leftExpression.getChildren().get(0),rightExpression);
-                }
-                if( rightExpression instanceof Literal){
-                    checkLiteralIsUnique((Literal) rightExpression,leftExpression);
-                }else if(rightExpression instanceof  Not && rightExpression.getChildren().get(0) instanceof Literal){
-                    checkLiteralIsUnique((Literal) rightExpression.getChildren().get(0),leftExpression);
-                }
+                Literal leftLiteral = getLiteral(leftExpression);
+                Literal rightLiteral = getLiteral(rightExpression);
+                if(leftLiteral != null)  checkLiteralIsUnique(leftLiteral,rightExpression);
+                if(rightLiteral != null) checkLiteralIsUnique(rightLiteral,leftExpression);
             }
             //if a clause is unit clause and  literal is hidden variable remove it from booleanAssignment
             else if( child instanceof Literal){

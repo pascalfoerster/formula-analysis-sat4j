@@ -90,12 +90,10 @@ public class PreprocessIffV2 extends IndeterminatePreprocess{
     private void checkBiImplies(BiImplies biImplies){
         IExpression leftExpression = biImplies.getLeftExpression();
         IExpression rightExpression = biImplies.getRightExpression();
-        if(leftExpression instanceof Literal ){
-            checkLiteralIsUnique((Literal) leftExpression,rightExpression,biImplies);
-        }
-        if( rightExpression instanceof Literal){
-            checkLiteralIsUnique((Literal) rightExpression,leftExpression, biImplies);
-        }
+        Literal leftLiteral = getLiteral(leftExpression);
+        Literal rightLiteral = getLiteral(rightExpression);
+        if (leftLiteral != null ) checkLiteralIsUnique(leftLiteral,rightExpression,biImplies);
+        if (rightLiteral != null) checkLiteralIsUnique(rightLiteral,leftExpression,biImplies);
     }
     /**
      * check if one side of {@link BiImplies} only have {@link Literal}s which are not hidden or hidden features which aren't indeterminate,
