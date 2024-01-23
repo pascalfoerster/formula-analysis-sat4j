@@ -67,17 +67,19 @@ public class SolutionsCommand extends ASAT4JAnalysisCommand<BooleanSolutionList,
                 .map(ComputeSolutionsSAT4J::new)
                 .set(
                         ComputeSolutionsSAT4J.FORBID_DUPLICATES,
-                        optionParser.get(FORBID_DUPLICATES_OPTION).get())
-                .set(ComputeSolutionsSAT4J.LIMIT, optionParser.get(LIMIT_OPTION).get())
+                        optionParser.getResult(FORBID_DUPLICATES_OPTION).get())
+                .set(
+                        ComputeSolutionsSAT4J.LIMIT,
+                        optionParser.getResult(LIMIT_OPTION).get())
                 .set(
                         ComputeSolutionsSAT4J.SELECTION_STRATEGY,
-                        optionParser.get(SELECTION_STRATEGY_OPTION).get())
+                        optionParser.getResult(SELECTION_STRATEGY_OPTION).get())
                 .set(
                         ComputeSolutionsSAT4J.RANDOM_SEED,
-                        optionParser.get(RANDOM_SEED_OPTION).get())
+                        optionParser.getResult(RANDOM_SEED_OPTION).get())
                 .set(
-                        ComputeSolutionsSAT4J.TIMEOUT,
-                        optionParser.get(TIMEOUT_OPTION).get());
+                        ComputeSolutionsSAT4J.SAT_TIMEOUT,
+                        optionParser.getResult(SAT_TIMEOUT_OPTION).get());
     }
 
     @Override

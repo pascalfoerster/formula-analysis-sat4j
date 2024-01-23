@@ -65,14 +65,15 @@ import java.util.stream.IntStream;
  */
 public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
 
-    //    public static class NodeList extends ArrayList<List<BooleanClause>> {
-    //        private static final long serialVersionUID = 1L;
-    //    }
-    //    public static final Dependency<NodeList> NODES = Dependency.newDependency(NodeList.class);
+    // public static class NodeList extends ArrayList<List<BooleanClause>> {
+    // private static final long serialVersionUID = 1L;
+    // }
+    // public static final Dependency<NodeList> NODES =
+    // Dependency.newDependency(NodeList.class);
 
     public static final Dependency<BooleanAssignment> LITERALS = Dependency.newDependency(BooleanAssignment.class);
     public static final Dependency<Integer> T = Dependency.newDependency(Integer.class);
-    public static final Dependency<Integer> LIMIT = Dependency.newDependency(Integer.class);
+    public static final Dependency<Integer> CONFIGURATION_LIMIT = Dependency.newDependency(Integer.class);
     public static final Dependency<Integer> ITERATIONS = Dependency.newDependency(Integer.class);
 
     @SuppressWarnings("rawtypes")
@@ -190,6 +191,7 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
     private int t, maxSampleSize, iterations, numberOfVariableLiterals;
 
     private SAT4JSolutionSolver solver;
+    private BooleanClauseList cnf;
     private ModalImplicationGraph mig;
     private Random random;
     private ABooleanAssignmentList<?> inputSample;
@@ -214,14 +216,17 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
         if (t < 1) {
             throw new IllegalArgumentException(String.valueOf(t));
         }
-        maxSampleSize = LIMIT.get(dependencyList);
+        maxSampleSize = CONFIGURATION_LIMIT.get(dependencyList);
         iterations = ITERATIONS.get(dependencyList);
+        if (iterations < 0) {
+            iterations = Integer.MAX_VALUE;
+        }
         random = new Random(RANDOM_SEED.get(dependencyList));
 
         solver = initializeSolver(dependencyList);
         mig = MIG.get(dependencyList);
         inputSample = SAMPLE.get(dependencyList);
-        BooleanClauseList cnf = BOOLEAN_CLAUSE_LIST.get(dependencyList);
+        cnf = BOOLEAN_CLAUSE_LIST.get(dependencyList);
         BooleanAssignment variables = LITERALS.get(dependencyList);
         BooleanAssignment core = new BooleanAssignment(mig.getCore());
 
@@ -263,19 +268,33 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
 
         buildCombinations(progress);
         for (int j = 1; j < iterations; j++) {
+            checkCancel();
             if (overLimit) {
                 buildCombinations(progress);
             } else {
                 rebuildCombinations(progress);
             }
         }
-        bestSolutionList = reduce(bestSolutionList);
 
-        BooleanSolutionList result = new BooleanSolutionList(cnf.getVariableCount());
-        for (int j = bestSolutionList.size() - 1; j >= 0; j--) {
-            result.add(autoComplete(bestSolutionList.get(j)));
+        return finalizeResult();
+    }
+
+    @Override
+    public Result<BooleanSolutionList> getIntermediateResult() {
+        return finalizeResult();
+    }
+
+    private Result<BooleanSolutionList> finalizeResult() {
+        if (bestSolutionList != null) {
+            List<PartialConfiguration> solution = reduce(bestSolutionList);
+            BooleanSolutionList result = new BooleanSolutionList(cnf.getVariableCount());
+            for (int j = solution.size() - 1; j >= 0; j--) {
+                result.add(autoComplete(solution.get(j)));
+            }
+            return Result.of(result);
+        } else {
+            return Result.empty();
         }
-        return Result.of(result);
     }
 
     private void buildCombinations(Progress monitor) {

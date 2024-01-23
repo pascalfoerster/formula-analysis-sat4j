@@ -42,6 +42,7 @@ import de.featjar.formula.analysis.sat4j.twise.YASA;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
+import java.time.Duration;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,26 @@ public class YASATest extends Common {
     public void variants() {
         compareVariants(loadModel("models_stability_light/busybox_monthlySnapshot/2007-05-20_17-12-43/clean.dimacs"));
         compareVariants(loadModel("EMBToolkit/model.xml"));
+    }
+
+    @Test
+    void gplRunsUntilTimeout() {
+        testTimeout(loadModel("GPL/model.xml"), 10);
+    }
+
+    private void testTimeout(IFormula formula, int timeoutSeconds) {
+        IComputation<BooleanClauseList> clauses = getClauses(formula);
+        BooleanSolutionList sample = clauses.map(YASA::new)
+                .set(YASA.T, 3)
+                .set(YASA.ITERATIONS, Integer.MAX_VALUE)
+                .computeResult(Duration.ofSeconds(timeoutSeconds))
+                .orElseThrow();
+        FeatJAR.log().info("Sample Size: %d", sample.size());
+
+        long time = System.currentTimeMillis();
+        CoverageStatistic statistic1 = computeCoverageNew(3, clauses, sample);
+        assertEquals(1.0, statistic1.coverage());
+        FeatJAR.log().info((System.currentTimeMillis() - time) / 1000.0);
     }
 
     private void benchmarkCompareSample(String modelPath, int t) {

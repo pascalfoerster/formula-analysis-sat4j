@@ -23,7 +23,6 @@ package de.featjar.formula.analysis.cli;
 import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.IComputation;
-import de.featjar.base.computation.ITimeoutDependency;
 import de.featjar.base.io.IO;
 import de.featjar.formula.analysis.AAnalysisCommand;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
@@ -32,7 +31,6 @@ import de.featjar.formula.io.FormulaFormats;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
@@ -48,22 +46,22 @@ public abstract class ASAT4JAnalysisCommand<T, U> extends AAnalysisCommand<T> {
     /**
      * Timeout option for canceling running computations.
      */
-    public static final Option<Duration> TIMEOUT_OPTION = new Option<>(
-                    "timeout", s -> Duration.ofMillis(Long.parseLong(s)))
+    public static final Option<Duration> SAT_TIMEOUT_OPTION = new Option<>(
+                    "solver_timeout", s -> Duration.ofMillis(Long.parseLong(s)))
             .setDescription("Timeout in milliseconds")
             .setValidator(timeout -> !timeout.isNegative())
-            .setDefaultValue(ITimeoutDependency.DEFAULT_TIMEOUT);
+            .setDefaultValue(Duration.ZERO);
 
     @Override
     public List<Option<?>> getOptions() {
-        return ICommand.addOptions(super.getOptions(), TIMEOUT_OPTION, RANDOM_SEED_OPTION);
+        return ICommand.addOptions(super.getOptions(), SAT_TIMEOUT_OPTION, RANDOM_SEED_OPTION);
     }
 
     @Override
     public IComputation<T> newComputation() {
-        Path input = optionParser.get(INPUT_OPTION).get();
-
-        return newAnalysis(IO.load(input, FormulaFormats.getInstance())
+        return newAnalysis(optionParser
+                .getResult(INPUT_OPTION)
+                .flatMap(p -> IO.load(p, FormulaFormats.getInstance()))
                 .toComputation()
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)

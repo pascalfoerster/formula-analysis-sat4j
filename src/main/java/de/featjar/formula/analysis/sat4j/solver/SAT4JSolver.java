@@ -21,7 +21,6 @@
 package de.featjar.formula.analysis.sat4j.solver;
 
 import de.featjar.base.FeatJAR;
-import de.featjar.base.computation.ITimeoutDependency;
 import de.featjar.base.data.Result;
 import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
@@ -44,7 +43,7 @@ public abstract class SAT4JSolver implements de.featjar.formula.analysis.ISolver
     protected final ISolver internalSolver = newInternalSolver();
     protected final SAT4JClauseList clauseList;
     protected final SAT4JAssignment assignment = new SAT4JAssignment();
-    protected Duration timeout = ITimeoutDependency.DEFAULT_TIMEOUT;
+    protected Duration timeout = Duration.ZERO;
     protected boolean globalTimeout;
 
     protected boolean isTimeoutOccurred;

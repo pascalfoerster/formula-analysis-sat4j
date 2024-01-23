@@ -26,6 +26,7 @@ import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.BooleanSolution;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
 import de.featjar.formula.analysis.sat4j.twise.YASA;
 import de.featjar.formula.structure.formula.IFormula;
@@ -35,7 +36,7 @@ public class TWiseCommand extends ASAT4JAnalysisCommand<BooleanSolutionList, Boo
 
     public static final Option<Integer> LIMIT_OPTION = new Option<>("n", Option.IntegerParser) //
             .setDescription("Maximum number of configurations to be generated") //
-            .setDefaultValue(1);
+            .setDefaultValue(Integer.MAX_VALUE);
 
     public static final Option<Integer> T_OPTION = new Option<>("t", Option.IntegerParser) //
             .setDescription("Value of t") //
@@ -60,15 +61,20 @@ public class TWiseCommand extends ASAT4JAnalysisCommand<BooleanSolutionList, Boo
             BooleanRepresentationComputation<IFormula, BooleanClauseList> formula) {
         return formula.map(Computations::getKey)
                 .map(YASA::new)
-                .set(YASA.T, optionParser.get(LIMIT_OPTION).get())
-                .set(YASA.LIMIT, optionParser.get(LIMIT_OPTION).get())
-                .set(YASA.ITERATIONS, optionParser.get(LIMIT_OPTION).get())
-                .set(YASA.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION).get())
-                .set(YASA.TIMEOUT, optionParser.get(TIMEOUT_OPTION).get());
+                .set(YASA.T, optionParser.get(T_OPTION))
+                .set(YASA.CONFIGURATION_LIMIT, optionParser.get(LIMIT_OPTION))
+                .set(YASA.ITERATIONS, optionParser.get(ITERATIONS_OPTION))
+                .set(YASA.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION))
+                .set(YASA.SAT_TIMEOUT, optionParser.get(SAT_TIMEOUT_OPTION));
     }
 
     @Override
     public String serializeResult(BooleanSolutionList list) {
-        return list.print();
+        StringBuilder sb = new StringBuilder();
+        for (BooleanSolution booleanSolution : list) {
+            sb.append("\n");
+            sb.append(booleanSolution.print());
+        }
+        return sb.toString();
     }
 }
