@@ -2,7 +2,6 @@ package de.featjar.formula.analysis.sat4j.indeterminate;
 
 import de.featjar.base.computation.*;
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.structure.IExpression;
@@ -11,8 +10,6 @@ import de.featjar.formula.structure.formula.predicate.Literal;
 import de.featjar.formula.structure.term.value.Variable;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -24,8 +21,10 @@ abstract public class IndeterminatePreprocess extends AComputation<BooleanAssign
     public static final Dependency<VariableMap> VARIABLE_MAP =
             Dependency.newDependency(VariableMap.class);
 
+    public static final Dependency<Boolean> PARALLEL =
+            Dependency.newDependency(Boolean.class);
     public IndeterminatePreprocess ( Object... computations) {
-        super(Computations.of(new BooleanAssignment()), Computations.of(new VariableMap()), computations);
+        super(Computations.of(new BooleanAssignment()), Computations.of(new VariableMap()),Computations.of(false), computations);
     }
 
     protected Variable[] getUnitVariables(IExpression expression){
@@ -34,8 +33,12 @@ abstract public class IndeterminatePreprocess extends AComputation<BooleanAssign
     protected BooleanAssignment removeHidden(BooleanAssignment hiddenVariables,VariableMap mapping, Variable... variables){
         return new BooleanAssignment(hiddenVariables.removeAll(Arrays.stream(variables).map(variable -> getMapping(variable.getName(),mapping)).mapToInt(Integer::intValue).toArray()));
     }
-    protected int unwrapLiteral(Literal literal, VariableMap mapping){
+    protected int unwrapVariable(Literal literal, VariableMap mapping){
         return literal.getChildren().isEmpty() ? 0 : getMapping(literal.getExpression().getName(),mapping);
+    }
+    protected int unwrapLiteral(Literal literal, VariableMap mapping){
+        int value =literal.getChildren().isEmpty() ? 0 : getMapping(literal.getExpression().getName(),mapping);
+        return literal.isPositive() ? value : -value;
     }
     protected int getMapping(String name, VariableMap mapping){
         Result<Integer> integerResult = mapping.get(name);
@@ -49,4 +52,5 @@ abstract public class IndeterminatePreprocess extends AComputation<BooleanAssign
         }
         return null;
     }
+
 }

@@ -7,13 +7,11 @@ import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
 import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
-import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.structure.IExpression;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.*;
 import de.featjar.formula.structure.formula.predicate.Literal;
-import de.featjar.formula.structure.term.value.IValue;
 import de.featjar.formula.structure.term.value.Variable;
 import de.featjar.formula.visitor.CoreDeadSimplifier;
 
@@ -82,7 +80,7 @@ public class PreprocessIff extends IndeterminatePreprocess{
      * check if one side of {@link BiImplies} only have {@link Literal}s which are not hidden or hidden features which aren't indeterminate,
      */
     private void checkLiteralIsUnique(Literal literal, IExpression otherExpression) {
-        int id = unwrapLiteral(literal,mapping);
+        int id = unwrapVariable(literal,mapping);
         if(hiddenVariables.contains(id)){
             List<Variable> variables = otherExpression.getVariables();
             for (Variable variable : variables){

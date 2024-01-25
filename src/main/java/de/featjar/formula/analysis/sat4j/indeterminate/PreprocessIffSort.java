@@ -34,11 +34,11 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
 
     private BooleanAssignment hiddenVariables;
     private VariableMap mapping;
-    private Set<BiImplies> checkingBiImplies;
+    private ArrayList<BiImplies> checkingBiImplies;
 
     public PreprocessIffSort(IComputation<IFormula> formula) {
         super(formula, Computations.of(new BooleanAssignment()), Computations.of(new BooleanAssignment()));
-        checkingBiImplies = new HashSet<>();
+        checkingBiImplies = new ArrayList<>();
     }
 
 
@@ -67,9 +67,9 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
                 IExpression rightExpression = implies.getRightExpression();
                 Literal leftLiteral = getLiteral(leftExpression);
                 Literal rightLiteral = getLiteral(rightExpression);
-                if (leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))) {
+                if (leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))) {
                     checkingBiImplies.add(implies);
-                }else if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
+                }else if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
                     checkingBiImplies.add(implies);
                 }
             }
@@ -98,8 +98,10 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
 
     private void sortBiImplies() {
         HashMap<Integer,Integer> rankHidden = new HashMap<>();
-        checkingBiImplies.stream().forEach(biImplies -> rankHiddenFeature(biImplies,rankHidden));
-        checkingBiImplies =  checkingBiImplies.stream().sorted((o1, o2) ->  Float.compare(rankBiImplies(o1, rankHidden), rankBiImplies(o2, rankHidden))).collect(Collectors.toCollection(LinkedHashSet::new));
+        HashMap<BiImplies,Float> rankExpression = new HashMap<>();
+        checkingBiImplies.forEach(biImplies -> rankHiddenFeature(biImplies,rankHidden));
+        checkingBiImplies.forEach(biImplies -> rankExpression.put(biImplies,rankBiImplies(biImplies,rankHidden)) );
+        checkingBiImplies =  checkingBiImplies.stream().sorted((o1, o2) ->  Float.compare(rankExpression.get(o1), rankExpression.get(o2))).collect(Collectors.toCollection(ArrayList::new));
     }
     //TODO improve rankSystem, Idea: give every hiddenVariable rank depending on how often it occurs as single Literal at a Biimplies side
     private float rankBiImplies(BiImplies biImplies,HashMap<Integer,Integer> rankHidden){
@@ -107,10 +109,10 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
-        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
+        if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
             List<Variable> variables = rightExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
-        } else if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
+        } else if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
             List<Variable> variables = leftExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
         }
@@ -130,16 +132,16 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
-        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
-            int id =  unwrapLiteral(leftLiteral, mapping);
+        if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
+            int id =  unwrapVariable(leftLiteral, mapping);
             Integer value = rankHidden.get(id);
-            if(value == null) value = -1;
+            if(value == null) value = 0;
             rankHidden.put(id,++value);
         }
-        if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
-            int id =  unwrapLiteral(rightLiteral, mapping);
+        if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
+            int id =  unwrapVariable(rightLiteral, mapping);
             Integer value = rankHidden.get(id);
-            if(value == null) value = -1;
+            if(value == null) value = 0;
             rankHidden.put(id,++value);
         }
     }
@@ -149,7 +151,7 @@ public class PreprocessIffSort extends IndeterminatePreprocess {
      * check if one side of {@link BiImplies} only have {@link Literal}s which are not hidden or hidden features which aren't indeterminate,
      */
     private void checkLiteralIsUnique(Literal literal, IExpression otherExpression) {
-        int id = unwrapLiteral(literal,mapping);
+        int id = unwrapVariable(literal,mapping);
         if (hiddenVariables.contains(id)) {
             List<Variable> variables = otherExpression.getVariables();
             for (Variable variable : variables) {

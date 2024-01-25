@@ -15,12 +15,10 @@ import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Not;
 import de.featjar.formula.structure.formula.connective.Reference;
 import de.featjar.formula.structure.formula.predicate.Literal;
-import de.featjar.formula.structure.term.value.IValue;
 import de.featjar.formula.structure.term.value.Variable;
 import de.featjar.formula.visitor.CoreDeadSimplifier;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PreprocessIffV2 extends IndeterminatePreprocess{
     private static final Dependency<IFormula> FORMULA =
@@ -99,7 +97,7 @@ public class PreprocessIffV2 extends IndeterminatePreprocess{
      * check if one side of {@link BiImplies} only have {@link Literal}s which are not hidden or hidden features which aren't indeterminate,
      */
     private void checkLiteralIsUnique(Literal literal, IExpression otherExpression, BiImplies biImplies) {
-        int id = unwrapLiteral(literal,mapping);
+        int id = unwrapVariable(literal,mapping);
         if(hiddenVariables.contains(id)){
             int[] variables = otherExpression.getVariables().stream().
                     mapToInt(variable -> getMapping(variable.getName(),mapping))

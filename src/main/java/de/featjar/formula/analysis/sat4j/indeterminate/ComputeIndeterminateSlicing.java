@@ -46,8 +46,11 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
     protected static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
             Dependency.newDependency(BooleanAssignment.class);
 
+    public static final Dependency<Boolean> PARALLEL =
+            Dependency.newDependency(Boolean.class);
+
     public ComputeIndeterminateSlicing(IComputation<BooleanClauseList> booleanClauseList) {
-        super(booleanClauseList, new ComputeConstant<>(new BooleanAssignment()));
+        super(booleanClauseList, new ComputeConstant<>(new BooleanAssignment()),Computations.of(false));
     }
 
     protected ComputeIndeterminateSlicing(ComputeIndeterminate other) {
@@ -88,6 +91,7 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
                 throw new AssertionError(hasSolution);
             }
         }
+        whileLoop:
         while (!potentialResultList.isEmpty()) {
             final int literal = potentialResultList.last();
             potentialResultList.pop();
@@ -95,10 +99,12 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
                     .set(CNFSlicer.VARIABLES_OF_INTEREST, hiddenVariables.removeAll(new BooleanAssignment(literal)))
                     .compute();
             for (final BooleanClause clause : slicedCNF) {
-                if (clause.containsAnyVariable(literal)) {
-                    final BooleanClause newClause =new BooleanClause(clause.removeAllVariables(literal));
-                    relevantClauses.add(newClause);
-                }
+                    int[] newClause =clause.removeAllVariables(literal);
+                    if(newClause.length >0) {
+                        relevantClauses.add(new BooleanClause(newClause));
+                    }else{
+                        continue whileLoop;
+                    }
             }
             final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(relevantClauses);
             final Result<Boolean> hasSolution = modSolver.hasSolution();

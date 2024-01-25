@@ -39,7 +39,7 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
     private VariableMap mapping;
     private ArrayList<Pair<String,List<Integer>>> definedFormula = new ArrayList<>();
 
-    private Set<BiImplies> checkingBiImplies = new HashSet<>();
+    private ArrayList<BiImplies> checkingBiImplies = new ArrayList<>();
     private int expressionMaxLength;
     public PreprocessIffCompSort(IComputation<IFormula> formula) {
         super(formula, Computations.of(new BooleanAssignment()),Computations.of(new BooleanAssignment()),Computations.of(2));
@@ -90,7 +90,7 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
             if (leftLiteral != null ) {
                 checkLiteralIsUnique(leftLiteral,rightExpression);
             }else {
-                Pair<String,List<Integer>> expr = interestingExpr(leftExpression,false);
+                Pair<String,List<Integer>> expr = interestingExpr(leftExpression,false,false);
                 if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
                     alreadyChecked = true;
                     checkUniqueExprOtherSide(rightExpression);
@@ -99,7 +99,7 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
             if (rightLiteral != null) {
                 checkLiteralIsUnique(rightLiteral,leftExpression);
             }else if(!alreadyChecked){
-                Pair<String,List<Integer>> expr = interestingExpr(rightExpression,false);
+                Pair<String,List<Integer>> expr = interestingExpr(rightExpression,false,false);
                 if(expr != null && definedFormula.stream().anyMatch(pair -> expr.getKey().equals(pair.getKey()) && pair.getValue().equals(expr.getValue()))){
                     checkUniqueExprOtherSide(leftExpression);
                 }
@@ -109,9 +109,10 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
     }
     private void sortBiImplies() {
         HashMap<Integer,Integer> rankHidden = new HashMap<>();
-        HashMap<ArrayList<Integer>,Integer> rankExpression = new HashMap<>();
-        checkingBiImplies.stream().forEach(biImplies -> rankHiddenFeature(biImplies,rankHidden));
-        checkingBiImplies =  checkingBiImplies.stream().sorted((o1, o2) ->  Float.compare(rankBiImplies(o1, rankHidden), rankBiImplies(o2, rankHidden))).collect(Collectors.toCollection(LinkedHashSet::new));
+        HashMap<BiImplies,Float> rankExpression = new HashMap<>();
+        checkingBiImplies.forEach(biImplies -> rankHiddenFeature(biImplies,rankHidden));
+        checkingBiImplies.forEach(biImplies -> rankExpression.put(biImplies,rankBiImplies(biImplies,rankHidden)) );
+        checkingBiImplies =  checkingBiImplies.stream().sorted((o1, o2) ->  Float.compare(rankExpression.get(o1), rankExpression.get(o2))).collect(Collectors.toCollection(ArrayList::new));
     }
     //TODO improve rankSystem, Idea: give every hiddenVariable rank depending on how often it occurs as single Literal at a Biimplies side
     private float rankBiImplies(BiImplies biImplies,HashMap<Integer,Integer> rankHidden){
@@ -119,10 +120,10 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
-        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
+        if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
             List<Variable> variables = rightExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
-        } else if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
+        } else if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
             List<Variable> variables = leftExpression.getVariables();
             return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
         }
@@ -154,16 +155,16 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
-        if(leftLiteral != null && hiddenVariables.contains(unwrapLiteral(leftLiteral,mapping))){
-            int id =  unwrapLiteral(leftLiteral, mapping);
+        if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
+            int id =  unwrapVariable(leftLiteral, mapping);
             Integer value = rankHidden.get(id);
-            if(value == null) value = -1;
+            if(value == null) value = 0;
             rankHidden.put(id,++value);
         }
-        if (rightLiteral != null && hiddenVariables.contains(unwrapLiteral(rightLiteral,mapping))) {
-            int id =  unwrapLiteral(rightLiteral, mapping);
+        if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
+            int id =  unwrapVariable(rightLiteral, mapping);
             Integer value = rankHidden.get(id);
-            if(value == null) value = -1;
+            if(value == null) value = 0;
             rankHidden.put(id,++value);
         }
     }
@@ -172,12 +173,12 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
      * check if one side of {@link BiImplies} only have {@link Literal}s which are not hidden or hidden features which aren't indeterminate,
      */
     private void checkLiteralIsUnique(Literal literal, IExpression otherExpression) {
-        int id = unwrapLiteral(literal,mapping);
+        int id = unwrapVariable(literal,mapping);
         List<Variable> variables = otherExpression.getVariables();
 
         if(hiddenVariables.contains(id)){
 
-            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false,false);
             Set<Integer> removedVariables = new HashSet<>();
             if(expr != null) {
                 definedFormula.forEach(pair ->{
@@ -188,7 +189,7 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
                     }
                 });
                 for (int variable :expr.getValue()) {
-                    if (hiddenVariables.contains( variable) && !removedVariables.contains(variable)) {
+                    if (hiddenVariables.contains( Math.abs( variable)) && !removedVariables.contains(variable)) {
                         return;
                     }
                 }
@@ -203,62 +204,68 @@ public class PreprocessIffCompSort extends IndeterminatePreprocess{
             hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
 
         }else if(variables.size() > 1 ){
-            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false,false);
             if(expr!=null) definedFormula.add(expr);
         }
     }
     private void checkUniqueExprOtherSide(IExpression otherExpression) {
         Literal literal = getLiteral(otherExpression);
         if(literal != null){
-            int id =  unwrapLiteral(literal, mapping);
+            int id =  unwrapVariable(literal, mapping);
             if(hiddenVariables.contains(id)) hiddenVariables =  new BooleanAssignment(hiddenVariables.removeAll(id));
         }else{
-            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false);
+            Pair<String,List<Integer>> expr = interestingExpr(otherExpression,false,false);
             if( expr!= null) definedFormula.add(expr);
         }
     }
 
     /**
      * Check if Expression is simple enough to be relevant for this algorithm and return as cnf.
+     * @param notAnd If Expression is  and return null
+     * @param onlyAnd If Expression is not and return null
+     *
      *
      */
-    private Pair<String,List<Integer>> interestingExpr(IExpression expression,boolean notAnd){
-       List<Integer> result = new ArrayList<>();
+    private Pair<String,List<Integer>> interestingExpr(IExpression expression,boolean notAnd, boolean onlyAnd){
+        List<Integer> result = new ArrayList<>();
         if( expression.getChildrenCount() <= expressionMaxLength ) {
-            if ((expression instanceof And && !notAnd) || expression instanceof Or) {
+            if ((expression instanceof And && !notAnd) || (expression instanceof Or && !onlyAnd)) {
                 for (IExpression child : expression.getChildren()) {
                     if (child instanceof Literal) {
                         result.add( unwrapLiteral((Literal) child, mapping));
                     } else if (child instanceof Not && child.getChildren().get(0) instanceof Literal) {
                         result.add( -unwrapLiteral((Literal) child.getChildren().get(0), mapping));
                     }else if(expression instanceof Or){
-                        Pair<String,List<Integer>> resultChild = interestingExpr(child,true);
+                        Pair<String,List<Integer>> resultChild = interestingExpr(child,true,false);
+                        if( resultChild == null) return null;
+                        result.addAll(resultChild.getValue());
+                    }else {
+                        Pair<String,List<Integer>> resultChild = interestingExpr(child,false,true);
                         if( resultChild == null) return null;
                         result.addAll(resultChild.getValue());
                     }
                 }
-                if(!notAnd) result = result.stream().sorted().collect(Collectors.toList());
+                if(!notAnd && !onlyAnd) result = result.stream().sorted().collect(Collectors.toList());
                 if(expression instanceof And) return new Pair<>("and",result);
                 return new Pair<>("or",result);
-            }  else if (expression instanceof Implies) {
+            }  else if (expression instanceof Implies && !onlyAnd) {
                 IExpression leftExpression = ((Implies) expression).getLeftExpression();
                 IExpression rightExpression = ((Implies) expression).getRightExpression();
-                int[] leftSide = null, rightSide = null;
                 if(leftExpression instanceof Literal ){
                     result.add( -unwrapLiteral((Literal)leftExpression,mapping ));
                 }else if(leftExpression instanceof  Not && leftExpression.getChildren().get(0) instanceof Literal){
                     result.add( unwrapLiteral((Literal)leftExpression.getChildren().get(0),mapping ));
                 }else {
-                    Pair<String,List<Integer>> resultChild = interestingExpr(leftExpression,true);
+                    Pair<String,List<Integer>> resultChild = interestingExpr(leftExpression,false,true);
                     if( resultChild == null) return null;
-                    result.addAll(resultChild.getValue());
+                    result.addAll(resultChild.getValue().stream().map(x-> -x).collect(Collectors.toList()));
                 }
                 if( rightExpression instanceof Literal){
                     result.add( unwrapLiteral((Literal)rightExpression,mapping ));
                 }else if(rightExpression instanceof  Not && rightExpression.getChildren().get(0) instanceof Literal){
                     result.add(-unwrapLiteral((Literal)rightExpression.getChildren().get(0),mapping ));
                 }else {
-                    Pair<String,List<Integer>> resultChild = interestingExpr(rightExpression,true);
+                    Pair<String,List<Integer>> resultChild = interestingExpr(rightExpression,true,false);
                     if( resultChild == null) return null;
                     result.addAll(resultChild.getValue());
                 }
