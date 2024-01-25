@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<graphics key="autolayoutconstraints" value="false"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showconstraints" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and abstract="true" mandatory="true" name="Root">
+			<and name="a">
+				<feature hidden="true" mandatory="true" name="aa"/>
+			</and>
+			<and name="b">
+				<feature hidden="true" name="ba"/>
+				<feature hidden="true" name="bb"/>
+			</and>
+			<and name="c">
+				<feature hidden="true" name="ca"/>
+				<feature hidden="true" name="cb"/>
+				<feature hidden="true" name="cc"/>
+			</and>
+			<alt mandatory="true" name="d">
+				<feature hidden="true" name="da"/>
+				<feature name="db"/>
+			</alt>
+			<feature hidden="true" name="e"/>
+			<feature hidden="true" name="f"/>
+			<feature hidden="true" name="g"/>
+			<feature hidden="true" mandatory="true" name="h"/>
+			<and mandatory="true" name="i">
+				<feature hidden="true" name="ia"/>
+			</and>
+			<feature hidden="true" name="j"/>
+			<feature hidden="true" name="k"/>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<eq>
+				<var>ba</var>
+				<var>bb</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>ba</var>
+				<var>aa</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>ca</var>
+				<conj>
+					<var>bb</var>
+					<var>da</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>cc</var>
+				<disj>
+					<var>aa</var>
+					<disj>
+						<var>ba</var>
+						<disj>
+							<var>ca</var>
+							<var>bb</var>
+						</disj>
+					</disj>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>cb</var>
+				<conj>
+					<var>ba</var>
+					<var>ca</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<not>
+				<var>e</var>
+			</not>
+		</rule>
+		<rule>
+			<var>f</var>
+		</rule>
+		<rule>
+			<eq>
+				<var>h</var>
+				<not>
+					<var>g</var>
+				</not>
+			</eq>
+		</rule>
+		<rule>
+			<imp>
+				<var>h</var>
+				<var>ia</var>
+			</imp>
+		</rule>
+		<rule>
+			<conj>
+				<var>k</var>
+				<var>j</var>
+			</conj>
+		</rule>
+	</constraints>
+</featureModel>

@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<graphics key="autolayoutconstraints" value="false"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showconstraints" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and abstract="true" mandatory="true" name="Root">
+			<and name="simple">
+				<graphics key="collapsed" value="false"/>
+				<and name="a">
+					<feature hidden="true" mandatory="true" name="aa"/>
+				</and>
+				<and name="c">
+					<feature hidden="true" name="ca"/>
+					<feature hidden="true" name="cb"/>
+				</and>
+				<and name="b">
+					<feature hidden="true" name="ba"/>
+					<feature hidden="true" name="bb"/>
+				</and>
+				<alt mandatory="true" name="d">
+					<feature hidden="true" name="da"/>
+					<feature name="db"/>
+				</alt>
+				<feature hidden="true" name="e"/>
+				<feature hidden="true" name="f"/>
+				<feature hidden="true" name="g"/>
+				<feature hidden="true" mandatory="true" name="h"/>
+				<and mandatory="true" name="i">
+					<feature hidden="true" name="ia"/>
+				</and>
+				<feature hidden="true" name="j"/>
+				<feature hidden="true" name="k"/>
+			</and>
+			<and name="complex">
+				<and name="l">
+					<feature hidden="true" name="la"/>
+					<feature name="lb"/>
+					<feature name="lc"/>
+					<feature hidden="true" name="ld"/>
+					<feature hidden="true" name="le"/>
+				</and>
+				<and name="m">
+					<feature hidden="true" name="ma"/>
+					<feature name="mb"/>
+					<feature name="mc"/>
+					<feature hidden="true" name="md"/>
+					<feature hidden="true" name="me"/>
+				</and>
+				<and name="n">
+					<feature hidden="true" name="na"/>
+					<feature name="nb"/>
+					<feature name="nc"/>
+					<feature name="nd"/>
+					<feature hidden="true" name="ne"/>
+				</and>
+				<and mandatory="true" name="o">
+					<feature hidden="true" name="oa"/>
+					<feature name="ob"/>
+					<feature name="oc"/>
+					<feature hidden="true" name="od"/>
+				</and>
+				<feature name="p"/>
+				<feature name="q"/>
+				<feature name="r"/>
+				<feature name="s"/>
+				<and name="t">
+					<graphics key="collapsed" value="false"/>
+					<feature hidden="true" name="ta"/>
+					<feature name="tb"/>
+					<feature hidden="true" name="tc"/>
+					<feature name="td"/>
+					<feature hidden="true" name="te"/>
+					<feature name="tf"/>
+					<feature hidden="true" name="tg"/>
+				</and>
+				<and name="u">
+					<graphics key="collapsed" value="false"/>
+					<feature hidden="true" name="ua"/>
+					<feature name="ub"/>
+					<feature hidden="true" name="uc"/>
+					<feature name="ud"/>
+					<feature hidden="true" name="ue"/>
+					<feature name="uf"/>
+					<feature hidden="true" name="ug"/>
+				</and>
+				<and name="v">
+					<feature hidden="true" name="va"/>
+					<feature name="vb"/>
+					<feature name="vc"/>
+					<feature hidden="true" name="vd"/>
+				</and>
+				<and name="w">
+					<feature hidden="true" name="wa"/>
+					<feature name="wb"/>
+					<feature name="wc"/>
+					<feature hidden="true" name="wd"/>
+				</and>
+				<and name="x">
+					<feature hidden="true" name="xa"/>
+					<feature name="xb"/>
+					<feature name="xc"/>
+					<feature name="xd"/>
+					<feature hidden="true" name="xe"/>
+				</and>
+				<and name="y">
+					<feature hidden="true" name="ya"/>
+					<feature hidden="true" name="yb"/>
+					<feature hidden="true" name="yc"/>
+					<feature hidden="true" name="ye"/>
+					<feature hidden="true" name="yf"/>
+					<feature hidden="true" name="yg"/>
+				</and>
+			</and>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<eq>
+				<var>ba</var>
+				<var>bb</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>ba</var>
+				<var>aa</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>ca</var>
+				<conj>
+					<var>bb</var>
+					<var>da</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>cb</var>
+				<conj>
+					<var>ba</var>
+					<var>ca</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<not>
+				<var>e</var>
+			</not>
+		</rule>
+		<rule>
+			<var>f</var>
+		</rule>
+		<rule>
+			<eq>
+				<var>h</var>
+				<not>
+					<var>g</var>
+				</not>
+			</eq>
+		</rule>
+		<rule>
+			<imp>
+				<var>h</var>
+				<var>ia</var>
+			</imp>
+		</rule>
+		<rule>
+			<conj>
+				<var>k</var>
+				<var>j</var>
+			</conj>
+		</rule>
+		<rule>
+			<eq>
+				<conj>
+					<var>md</var>
+					<var>mc</var>
+				</conj>
+				<var>me</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<conj>
+					<var>md</var>
+					<var>mc</var>
+				</conj>
+				<conj>
+					<var>mb</var>
+					<var>ma</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<conj>
+					<var>ma</var>
+					<var>mb</var>
+				</conj>
+				<var>p</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>q</var>
+				<imp>
+					<var>na</var>
+					<disj>
+						<var>nb</var>
+						<imp>
+							<var>nc</var>
+							<var>nd</var>
+						</imp>
+					</disj>
+				</imp>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>ne</var>
+				<disj>
+					<not>
+						<var>na</var>
+					</not>
+					<disj>
+						<var>nb</var>
+						<disj>
+							<not>
+								<var>nc</var>
+							</not>
+							<var>nd</var>
+						</disj>
+					</disj>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>r</var>
+				<disj>
+					<conj>
+						<var>oa</var>
+						<var>ob</var>
+					</conj>
+					<var>oc</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>od</var>
+				<disj>
+					<conj>
+						<var>oa</var>
+						<var>ob</var>
+					</conj>
+					<var>oc</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>q</var>
+				<disj>
+					<var>ua</var>
+					<var>ub</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<disj>
+					<var>ua</var>
+					<var>ub</var>
+				</disj>
+				<conj>
+					<var>uc</var>
+					<var>ud</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<conj>
+					<var>uc</var>
+					<var>ud</var>
+				</conj>
+				<imp>
+					<var>ue</var>
+					<var>uf</var>
+				</imp>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<disj>
+					<var>uf</var>
+					<not>
+						<var>ue</var>
+					</not>
+				</disj>
+				<var>ug</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>r</var>
+				<disj>
+					<var>ta</var>
+					<var>tb</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<conj>
+					<var>tc</var>
+					<var>td</var>
+				</conj>
+				<imp>
+					<var>te</var>
+					<var>tf</var>
+				</imp>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<disj>
+					<var>ta</var>
+					<var>tb</var>
+				</disj>
+				<conj>
+					<var>tc</var>
+					<var>td</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<disj>
+					<var>tf</var>
+					<not>
+						<var>te</var>
+					</not>
+				</disj>
+				<var>tg</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>vd</var>
+				<disj>
+					<var>va</var>
+					<disj>
+						<var>vb</var>
+						<var>vc</var>
+					</disj>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>s</var>
+				<disj>
+					<var>va</var>
+					<var>vb</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>s</var>
+				<disj>
+					<var>wa</var>
+					<var>wb</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>wd</var>
+				<disj>
+					<var>wa</var>
+					<disj>
+						<var>wb</var>
+						<var>wc</var>
+					</disj>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>p</var>
+				<conj>
+					<var>la</var>
+					<var>lb</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>p</var>
+				<conj>
+					<var>lb</var>
+					<conj>
+						<var>lc</var>
+						<var>ld</var>
+					</conj>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>le</var>
+				<conj>
+					<var>la</var>
+					<conj>
+						<var>lb</var>
+						<conj>
+							<var>lc</var>
+							<var>ld</var>
+						</conj>
+					</conj>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>x</var>
+				<imp>
+					<imp>
+						<not>
+							<var>xa</var>
+						</not>
+						<not>
+							<var>xb</var>
+						</not>
+					</imp>
+					<not>
+						<var>xc</var>
+					</not>
+				</imp>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<imp>
+					<disj>
+						<var>xa</var>
+						<disj>
+							<var>xb</var>
+							<var>xc</var>
+						</disj>
+					</disj>
+					<not>
+						<var>xd</var>
+					</not>
+				</imp>
+				<var>xe</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>s</var>
+				<disj>
+					<imp>
+						<conj>
+							<var>ya</var>
+							<var>yb</var>
+						</conj>
+						<var>yc</var>
+					</imp>
+					<imp>
+						<not>
+							<var>ye</var>
+						</not>
+						<not>
+							<var>yf</var>
+						</not>
+					</imp>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>yg</var>
+				<disj>
+					<not>
+						<var>ya</var>
+					</not>
+					<disj>
+						<not>
+							<var>yb</var>
+						</not>
+						<disj>
+							<var>yc</var>
+							<disj>
+								<var>ye</var>
+								<not>
+									<var>yf</var>
+								</not>
+							</disj>
+						</disj>
+					</disj>
+				</disj>
+			</eq>
+		</rule>
+	</constraints>
+</featureModel>

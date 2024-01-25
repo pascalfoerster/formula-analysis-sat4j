@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<graphics key="autolayoutconstraints" value="false"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showconstraints" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and abstract="true" mandatory="true" name="Root">
+			<and name="a">
+				<feature hidden="true" mandatory="true" name="b"/>
+			</and>
+			<and name="c">
+				<feature hidden="true" name="d"/>
+			</and>
+			<and name="e">
+				<feature name="f"/>
+				<feature name="g"/>
+			</and>
+			<and name="i">
+				<feature name="j"/>
+				<feature hidden="true" name="k"/>
+			</and>
+			<and name="l">
+				<feature hidden="true" name="m"/>
+			</and>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<imp>
+				<var>d</var>
+				<var>b</var>
+			</imp>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>b</var>
+				</not>
+				<var>d</var>
+			</disj>
+		</rule>
+		<rule>
+			<imp>
+				<var>m</var>
+				<disj>
+					<var>e</var>
+					<var>i</var>
+				</disj>
+			</imp>
+		</rule>
+		<rule>
+			<imp>
+				<not>
+					<conj>
+						<not>
+							<var>e</var>
+						</not>
+						<not>
+							<var>i</var>
+						</not>
+					</conj>
+				</not>
+				<var>m</var>
+			</imp>
+		</rule>
+		<rule>
+			<imp>
+				<var>k</var>
+				<disj>
+					<var>j</var>
+					<conj>
+						<var>f</var>
+						<var>g</var>
+					</conj>
+				</disj>
+			</imp>
+		</rule>
+		<rule>
+			<imp>
+				<disj>
+					<var>j</var>
+					<conj>
+						<var>f</var>
+						<var>g</var>
+					</conj>
+				</disj>
+				<var>k</var>
+			</imp>
+		</rule>
+	</constraints>
+</featureModel>

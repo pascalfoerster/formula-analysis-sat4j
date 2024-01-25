@@ -32,178 +32,218 @@ import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.IBooleanRepresentation;
 import de.featjar.formula.analysis.mig.solver.MIGBuilder;
+import de.featjar.formula.analysis.mig.solver.ModalImplicationGraph;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
+
+import java.nio.channels.Pipe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class ComputeIndeterminateTest extends Common {
 
-    private static IComputation<IFormula> formula;
-    private static ComputeCNFFormula cnfC;
-    private static IComputation<IBooleanRepresentation> clauses;
-    private static VariableMap variables;
-    private static BooleanAssignment hiddenVariables;
-    private static BooleanAssignment deadFeature = new BooleanAssignment();
-    private static BooleanAssignment coreFeature = new BooleanAssignment();
-    private static List<String> eIndeterminate;
-    private static List<BiImplies> biImplies;
+    private static ArrayList<IComputation<IFormula>> formulas = new ArrayList<>();
+    private static ComputeCNFFormula cnfC ;
+    private static ArrayList<IComputation<IBooleanRepresentation>> clauses= new ArrayList<>();
+    private static ArrayList<VariableMap> variables = new ArrayList<>();
+    private static ArrayList<BooleanAssignment> hiddenVariables = new ArrayList<>();
+    private static ArrayList<BooleanAssignment> deadFeatures = new ArrayList<>();
+    private static ArrayList<BooleanAssignment> coreFeatures = new ArrayList<>();
+    private static ArrayList<List<BiImplies>> biImplies = new ArrayList<>();
+    private static ModalImplicationGraph modalImplicationGraph;
 
 
     @BeforeAll
     static void createTests(){
-       Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = loadHiddenModel("testFeatureModels/megasimple.xml");
-//      Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = loadHiddenModel("GPL/model.xml");
-//        Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = loadHiddenModel("testFeatureModels/testmodel.xml");
-//        Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = Computations.of(loadModel("testFeatureModels/simple3.xml"));
-        formula = Computations.of(model.getKey());
-   //     formula = Computations.of(loadModel("testFeatureModels/megasimple.xml"));
-        cnfC = formula.map(ComputeNNFFormula::new)
+        for(int i = 1; i < 5; i++){
+            Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = loadHiddenModel("testFeatureModels/testIndeterminateFeatureModels/model"+i+".xml");
+            IComputation<IFormula> formula = Computations.of(model.getKey());
+            formulas.add(formula);
+            BooleanRepresentationComputation<IFormula, IBooleanRepresentation> cnf =
+                    formula.map(ComputeNNFFormula::new)
+                            .map(ComputeCNFFormula::new)
+                            .map(BooleanRepresentationComputation::new);
+            clauses.add(cnf.map(Computations::getKey));
+            VariableMap variableMap = cnf.map(Computations::getValue).compute();
+            variables.add(variableMap);
+            hiddenVariables.add(new BooleanAssignment(model.getValue().getKey().stream().mapToInt(x-> variableMap.get(x).get()).toArray()));
+            biImplies.add(model.getValue().getValue());
+
+        }
+
+
+        cnfC = formulas.get(3).map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new);
-        BooleanRepresentationComputation<IFormula, IBooleanRepresentation> cnf = cnfC
-                .map(BooleanRepresentationComputation::new);
-        clauses = cnf.map(Computations::getKey);
-        variables = cnf.map(Computations::getValue).compute();
-        hiddenVariables = new BooleanAssignment(model.getValue().getKey().stream().mapToInt(x-> variables.get(x).get()).toArray());
-        biImplies = model.getValue().getValue();
-//       eIndeterminate = new ArrayList<>(Arrays.asList("+n","+h","+q","+r")).stream().sorted().collect(Collectors.toList());
-        eIndeterminate = new ArrayList<>(Arrays.asList("+f","+g","+h","+i")).stream().sorted().collect(Collectors.toList());
-//          coreFeature = new BooleanAssignment(variables.get("a").get(),variables.get("d").get(),variables.get("e").get());
-  //        deadFeature = new BooleanAssignment(variables.get("g").get());
-  //      eIndeterminate = new ArrayList<>();
+
+        coreFeatures.add( new BooleanAssignment(variables.get(1).get("h").get()));
+        deadFeatures.add(  new BooleanAssignment(variables.get(1).get("g").get()));
+        coreFeatures.add( new BooleanAssignment(variables.get(2).get("h").get()));
+        deadFeatures.add(  new BooleanAssignment(variables.get(2).get("g").get()));
 
     }
 
     @Test
     void formulaOnlyIndeterminateAnalysis() {
-        long time = System.currentTimeMillis();
-        BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                .map(ComputeIndeterminate::new)
-                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                .compute();
+        BooleanAssignment result = clauses.get(0).cast(BooleanClauseList.class)
+            .map(ComputeIndeterminate::new)
+            .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, new BooleanAssignment())
+            .compute();
         List<String> indeterminate = result.streamValues()
-                .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
+                .map(v -> variables.get(0).get(v.getKey()).get()).sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() - time;
-        System.out.println("Normal: " + time + " ns");
-        assertEquals(eIndeterminate, indeterminate);
+        assertEquals(0, indeterminate.size());
+        BooleanAssignment result2 = clauses.get(0).cast(BooleanClauseList.class)
+                .map(ComputeIndeterminate::new)
+                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables.get(0))
+                .compute();
+        List<String> indeterminate2 = result2.streamValues()
+                .map(v -> variables.get(0).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+        assertEquals(Stream.of("d","e","f").sorted().collect(Collectors.toList()), indeterminate2);
+
+        BooleanAssignment result3 = clauses.get(2).cast(BooleanClauseList.class)
+                .map(ComputeIndeterminate::new)
+                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables.get(2))
+                .compute();
+        List<String> indeterminate3 = result3.streamValues()
+                .map(v -> variables.get(2).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+        assertEquals(Stream.of("la","ld","ma","md","na","oa","ta","tc","te","ua","uc","ue","va","wa","xa","xe","ya","yb","yc","ye","yf").sorted().collect(Collectors.toList()), indeterminate3);
     }
+
+
     @Test
     void formulaOnlyIndeterminateSlicingAnalysis() {
-        Long time = System.currentTimeMillis();
-        BooleanAssignment result = clauses.cast(BooleanClauseList.class)
+        BooleanAssignment result = clauses.get(0).cast(BooleanClauseList.class)
                 .map(ComputeIndeterminateSlicing::new)
-                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST,hiddenVariables)
+                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables.get(0))
                 .compute();
         List<String> indeterminate = result.streamValues()
-                .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
+                .map(v -> variables.get(0).get(v.getKey()).get()).sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() -time;
-        System.out.println("Slicing: "+ time+" ns");
-        assertEquals(eIndeterminate, indeterminate);;
+        assertEquals(Stream.of("d","e","f").sorted().collect(Collectors.toList()), indeterminate);
     }
 
 
     @Test
-    void simplePreprocess(){
-        long time = System.currentTimeMillis();
-            BooleanAssignment hiddenVariables = new PreprocessIff(formula)
-                    .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables)
-                    .set(PreprocessIff.VARIABLE_MAP, variables)
-                    .set(PreprocessIff.CORE_FEATURE,coreFeature)
-                    .set(PreprocessIff.DEAD_FEATURE,deadFeature)
-                    .compute();
-            BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                    .map(ComputeIndeterminate::new)
-                    .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                    .compute();
-            List<String> indeterminate = result.streamValues()
-                    .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
-                    .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() - time;
-        System.out.println("Pre2: " + time + " ns");
-            assertEquals(eIndeterminate, indeterminate);
+    void simplePreprocess() {
+        BooleanAssignment hiddenVariables = new PreprocessIff(formulas.get(1))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(0))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(0))
+                .compute();
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        assertEquals(Stream.of("bb","ca","cb","cc").sorted().collect(Collectors.toList()), indeterminate);
+        BooleanAssignment hiddenVariables2 = new PreprocessIff(formulas.get(1))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
+                .set(PreprocessIff.CORE_FEATURE, new BooleanAssignment())
+                .set(PreprocessIff.DEAD_FEATURE, new BooleanAssignment())
+                .compute();
+        List<String> indeterminate2 = hiddenVariables2.streamValues()
+                .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        assertEquals(Stream.of("bb","ia","cb","ca","cc").sorted().collect(Collectors.toList()), indeterminate2);
     }
     @Test
     void preprocessMem(){
-        long time = System.currentTimeMillis();
-            BooleanAssignment hiddenVariables = new PreprocessIffV2(formula)
-                    .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables)
-                    .set(PreprocessIff.VARIABLE_MAP, variables)
-                    .compute();
-            BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                    .map(ComputeIndeterminate::new)
-                    .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                    .compute();
-            List<String> indeterminate = result.streamValues()
-                    .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
-                    .collect(Collectors.toCollection(ArrayList::new));
-            time = System.currentTimeMillis() - time;
-        System.out.println("Pre: " + time + " ns");
-            assertEquals(eIndeterminate, indeterminate);
+        BooleanAssignment hiddenVariables = new PreprocessIffV2(formulas.get(1))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(0))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(0))
+                .compute();
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        assertEquals(0, indeterminate.size());
+        BooleanAssignment hiddenVariables2 = new PreprocessIffV2(formulas.get(2))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(2))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(1))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(1))
+                .compute();
+        List<String> indeterminate2 = hiddenVariables2.streamValues()
+                .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        assertEquals(Stream.of("la","ld","le","ma","md","me","na","ne","oa","od","ta","tc","te","tg","ua","uc","ue","ug","va","vd","wa","wd","xa","xe","ya","yb","yc","ye","yf","yg").sorted().collect(Collectors.toList()), indeterminate2);
+
     }
     @Test
     void preprocessSort(){
-        long time = System.currentTimeMillis();
-        BooleanAssignment hiddenVariables = new PreprocessIffSort(formula)
-                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables)
-                .set(PreprocessIff.VARIABLE_MAP, variables)
+        BooleanAssignment hiddenVariables = new PreprocessIffSort(formulas.get(1))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(0))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(0))
                 .compute();
-        BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                .map(ComputeIndeterminate::new)
-                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                .compute();
-        List<String> indeterminate = result.streamValues()
-                .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() - time;
-        System.out.println("PreSort: " + time + " ns");
-        assertEquals(eIndeterminate, indeterminate);
+
+        assertEquals(List.of("cb"), indeterminate);
     }
     @Test
     void preprocessImplicationGraph(){
-        long time = System.currentTimeMillis();
-        BooleanAssignment hiddenVariables = new PreprocessImGraph(Computations.of(clauses
-                    .cast(BooleanClauseList.class)
-                    .map(MIGBuilder::new).compute()))
-                .set(PreprocessImGraph.VARIABLES_OF_INTEREST,ComputeIndeterminateTest.hiddenVariables)
-                .set(PreprocessImGraph.VARIABLE_MAP,variables)
+        modalImplicationGraph = clauses.get(3)
+                .cast(BooleanClauseList.class)
+                .map(MIGBuilder::new).compute();
+        BooleanAssignment hiddenVariables = new PreprocessImGraph(Computations.of(modalImplicationGraph))
+                .set(PreprocessImGraph.VARIABLES_OF_INTEREST,ComputeIndeterminateTest.hiddenVariables.get(3))
+                .set(PreprocessImGraph.VARIABLE_MAP,variables.get(3))
                 .compute();
-        BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                .map(ComputeIndeterminate::new)
-                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                .compute();
-        List<String> indeterminate = result.streamValues()
-                .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(3).get(v.getKey()).get()).sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() - time;
-        System.out.println("Impl: " + time + " ns");
-        assertEquals(eIndeterminate, indeterminate);
+        assertEquals(List.of("k"), indeterminate);
     }
 
     @Test
     void preprocessBiComplicated(){
-        long time = System.currentTimeMillis();
-        BooleanAssignment hiddenVariables = new PreprocessIffComp(formula)
-                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables)
-                .set(PreprocessIff.VARIABLE_MAP, variables)
+        BooleanAssignment hiddenVariables = new PreprocessIffComp(formulas.get(2))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(2))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(1))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(1))
                 .compute();
-        BooleanAssignment result = clauses.cast(BooleanClauseList.class)
-                .map(ComputeIndeterminate::new)
-                .set(ComputeIndeterminate.VARIABLES_OF_INTEREST, hiddenVariables)
-                .compute();
-        List<String> indeterminate = result.streamValues()
-                .map(v -> (v.getValue() ? "+" : "-") + variables.get(v.getKey()).get()).sorted()
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        time = System.currentTimeMillis() - time;
-        System.out.println("PreComplicated: " + time + " ns");
-        assertEquals(eIndeterminate, indeterminate);
+        assertEquals(Stream.of("bb","ca", "cb","la","ld","ma","md","me","na","oa","od","ta","tc","te","tg","ua","uc","ue","va","vd","wa","xa","xe","ya","yb","yc","ye","yf").sorted().collect(Collectors.toList()), indeterminate);
     }
+
+    @Test
+    void preprocessBiComplicatedSort(){
+        BooleanAssignment hiddenVariables = new PreprocessIffCompSort(formulas.get(2))
+                .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
+                .set(PreprocessIff.VARIABLE_MAP, variables.get(2))
+                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(1))
+                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(1))
+                .compute();
+        List<String> indeterminate = hiddenVariables.streamValues()
+                .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+        assertEquals(Stream.of("cb","la","ld","ma","md","na","oa","od","ta","tc","te","tg","ua","uc","ue","va","wa","xa","xe","ya","yb","yc","ye","yf").sorted().collect(Collectors.toList()), indeterminate);
+    }
+
+    @Test
+    void testBiImplicationTransformer(){
+
+    }
+
 }
