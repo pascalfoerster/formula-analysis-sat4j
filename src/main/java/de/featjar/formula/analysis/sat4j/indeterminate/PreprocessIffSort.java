@@ -24,9 +24,7 @@ import java.util.stream.Collectors;
 /**
  * preprocess step, to find not indeterminate hidden features
  */
-public class PreprocessIffSort extends IndeterminatePreprocess {
-    private static final Dependency<IFormula> FORMULA =
-            Dependency.newDependency(IFormula.class);
+public class PreprocessIffSort extends IndeterminatePreprocessFormula {
     public static final Dependency<BooleanAssignment> DEAD_FEATURE =
             Dependency.newDependency(BooleanAssignment.class);
     public static final Dependency<BooleanAssignment> CORE_FEATURE =

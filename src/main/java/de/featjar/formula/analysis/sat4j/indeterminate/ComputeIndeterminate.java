@@ -42,7 +42,7 @@ import java.util.stream.IntStream;
  */
 public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignment> {
 
-    protected static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
+    public static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
             Dependency.newDependency(BooleanAssignment.class);
 
     public ComputeIndeterminate(IComputation<BooleanClauseList> booleanClauseList) {
@@ -59,7 +59,8 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
         BooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
         int variableSize = clauseList.getVariableCount();
         if(hiddenVariables.isEmpty()) return Result.of(new BooleanAssignment());
-        BooleanClauseList updateClauseList = new BooleanClauseList(clauseList);
+        BooleanClauseList updateClauseList = new BooleanClauseList(clauseList.getVariableCount()+hiddenVariables.size());
+        updateClauseList.addAll(clauseList);
         for (final BooleanClause clause: new BooleanClauseList(updateClauseList)) {
             int[] removeLiterals = clause.retainAllVariables(hiddenVariables.get());
             int[] newLiterals = clause.removeAllVariables(hiddenVariables.get());
@@ -69,7 +70,7 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
                             ?  variableSize + hiddenVariables.indexOfVariable(removeLiterals[i]) + 1
                             : -variableSize - hiddenVariables.indexOfVariable(-removeLiterals[i]) - 1;
                 }
-                updateClauseList.add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));
+                updateClauseList.add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));;
             }
         }
         final ExpandableIntegerList resultList = new ExpandableIntegerList();

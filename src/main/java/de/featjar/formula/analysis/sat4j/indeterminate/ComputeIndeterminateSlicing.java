@@ -43,7 +43,7 @@ import org.sat4j.core.VecInt;
  */
 public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<BooleanAssignment> {
 
-    protected static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
+    public static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
             Dependency.newDependency(BooleanAssignment.class);
 
     public static final Dependency<Boolean> PARALLEL =
@@ -64,19 +64,21 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
 
         BooleanClauseList relevantClauses = new BooleanClauseList(0);
         VecInt potentialResultList = new VecInt();
-
         final ExpandableIntegerList resultList = new ExpandableIntegerList();
         variableLoop:
         for (final int variable : hiddenVariables.get()) {
             BooleanClauseList modClauseList = new BooleanClauseList(clauseList.getVariableCount());
             for (final BooleanClause clause : clauseList.getAll()) {
-                final int[] newLiterals = clause.removeAllVariables(variable);
-                if (newLiterals.length > 0) {
-                    modClauseList.add(new BooleanClause(newLiterals));
-                } else {
-                    potentialResultList.push(variable);
-                    continue variableLoop;
-                }
+                    final int[] newLiterals = cleanClause(clause,variable);
+                    if(newLiterals != null) {
+                        if (newLiterals.length > 0) {
+                            modClauseList.add(new BooleanClause(newLiterals));
+                        } else {
+                            potentialResultList.push(variable);
+                            continue variableLoop;
+                        }
+                    }
+
             }
             final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(modClauseList);
 
@@ -91,7 +93,7 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
                 throw new AssertionError(hasSolution);
             }
         }
-        whileLoop:
+        sliceLoop:
         while (!potentialResultList.isEmpty()) {
             final int literal = potentialResultList.last();
             potentialResultList.pop();
@@ -99,12 +101,15 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
                     .set(CNFSlicer.VARIABLES_OF_INTEREST, hiddenVariables.removeAll(new BooleanAssignment(literal)))
                     .compute();
             for (final BooleanClause clause : slicedCNF) {
-                    int[] newClause =clause.removeAllVariables(literal);
-                    if(newClause.length >0) {
-                        relevantClauses.add(new BooleanClause(newClause));
-                    }else{
-                        continue whileLoop;
+                    int[] newClause = cleanClause(clause,literal);
+                    if(newClause != null) {
+                        if (newClause.length > 0) {
+                            relevantClauses.add(new BooleanClause(newClause));
+                        } else {
+                            continue sliceLoop;
+                        }
                     }
+
             }
             final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(relevantClauses);
             final Result<Boolean> hasSolution = modSolver.hasSolution();
@@ -120,6 +125,11 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
         }
 
         return Result.of(new BooleanAssignment(resultList.toArray()));
+    }
+
+    private int[] cleanClause(BooleanClause clause, int variable) {
+        if(clause.contains(variable) && clause.contains(-variable)) return null;
+        return clause.removeAllVariables(variable);
     }
 
 }

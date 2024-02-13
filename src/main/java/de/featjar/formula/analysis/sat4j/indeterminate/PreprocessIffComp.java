@@ -24,9 +24,7 @@ import java.util.stream.Collectors;
  * this technique
  * TODO Discuss, because maybe it to complex
  */
-public class PreprocessIffComp extends IndeterminatePreprocess{
-    private static final Dependency<IFormula> FORMULA =
-            Dependency.newDependency(IFormula.class);
+public class PreprocessIffComp extends IndeterminatePreprocessFormula{
     public static final Dependency<BooleanAssignment> DEAD_FEATURE =
             Dependency.newDependency(BooleanAssignment.class);
     public static final Dependency<BooleanAssignment> CORE_FEATURE =
@@ -160,7 +158,7 @@ public class PreprocessIffComp extends IndeterminatePreprocess{
      */
     private Pair<String,List<Integer>> interestingExpr(IExpression expression,boolean notAnd, boolean onlyAnd){
        List<Integer> result = new ArrayList<>();
-        if( expression.getChildrenCount() <= expressionMaxLength ) {
+        if( expression.getVariables().size() <= expressionMaxLength ) {
             if ((expression instanceof And && !notAnd) || (expression instanceof Or && !onlyAnd)) {
                 for (IExpression child : expression.getChildren()) {
                     if (child instanceof Literal) {

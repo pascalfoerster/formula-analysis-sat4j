@@ -20,9 +20,7 @@ import de.featjar.formula.visitor.CoreDeadSimplifier;
 
 import java.util.*;
 
-public class PreprocessIffV2 extends IndeterminatePreprocess{
-    private static final Dependency<IFormula> FORMULA =
-            Dependency.newDependency(IFormula.class);
+public class PreprocessIffV2 extends IndeterminatePreprocessFormula{
     public static final Dependency<BooleanAssignment> DEAD_FEATURE =
             Dependency.newDependency(BooleanAssignment.class);
     public static final Dependency<BooleanAssignment> CORE_FEATURE =

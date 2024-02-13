@@ -9,11 +9,10 @@ import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Or;
 import de.featjar.formula.structure.formula.predicate.Literal;
 import de.featjar.formula.structure.term.value.Variable;
+import de.featjar.formula.transformer.ComputeCNFFormula;
+import de.featjar.formula.transformer.ComputeNNFFormula;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -41,11 +40,11 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
     /**
      * Creates a new CNF with Bi Impliakations formula computation.
      *
-     * @param nnfFormula the input NNF formula computation
+     * @param cnfFormula the input NNF formula computation
      */
-    public ComputeBiImplicationFormula(IComputation<IFormula> nnfFormula,VariableMap map) {
+    public ComputeBiImplicationFormula(IFormula cnfFormula,VariableMap map) {
         super(
-                nnfFormula, //
+                Computations.of(cnfFormula), //
                 Computations.of(map),
                 Computations.of(new ArrayList<>()),
                 Computations.of(2));
@@ -72,14 +71,14 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
                 if (twoClauses.stream().noneMatch(exClause -> eqClause(exClause, clause))) {
                     twoClauses.add(clause);
                     if (twoClauses.stream().anyMatch((c1) -> findMatch(c1, clause))) {
-                        result.add(createImplies(clause, 0));
+                        result.add(createBiImplies(clause, 0));
                     }
                     possibleBiImplications.keySet().stream().filter(c1 -> findMatch(clause, c1)).forEach(longClause -> {
                         HashMap<Integer, ArrayList<int[]>> matches = possibleBiImplications.get(longClause);
                         addPossibleBiImplMatches(matches, clause);
                     });
                 }
-            }else if (expression.getChildrenCount() <= max_clause_size && expression.getChildrenCount() > 2) {
+            }else if (expression.getVariables().size() <= max_clause_size && expression.getVariables().size() > 2) {
                 if(possibleBiImplications.keySet().stream().noneMatch(exClause -> eqClause(exClause, clause))) {
                     HashMap<Integer, ArrayList<int[]>> matches = new HashMap<>();
                     twoClauses.stream().filter(twoClause -> findMatch(twoClause, clause)).collect(Collectors.toList()).forEach(twoClausesMatch -> {
@@ -93,11 +92,11 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
         possibleBiImplications.forEach((clause, matches) -> {
             matches.forEach((value,match) -> {
                 if(match.size() + 1 == clause.length ){
-                    finalResult.add(createImplies(clause, IntStream.range(0, clause.length).filter(i -> clause[i] == value).findFirst().orElse(-1)));
+                    finalResult.add(createBiImplies(clause, IntStream.range(0, clause.length).filter(i -> clause[i] == value).findFirst().orElse(-1)));
                 }
             });
         });
-        result = (ArrayList<BiImplies>) result.stream().filter((biIm) -> existing_BiImplies.stream().noneMatch(biImEx -> notRelevantBiImplies(biImEx,biIm))).collect(Collectors.toList());
+        result = (ArrayList<BiImplies>) result.stream().filter((biIm) -> existing_BiImplies.stream().noneMatch(biImEx -> equalsBiImplies(biImEx,biIm))).collect(Collectors.toList());
         return Result.of(result);
     }
 
@@ -139,7 +138,7 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
         }
         return temp;
     }
-    private BiImplies createImplies(int[] clause, int leftSideIndex){
+    private BiImplies createBiImplies(int[] clause, int leftSideIndex){
         IFormula leftExpression = new Literal(true,new Variable(""));
         IFormula rightExpression;
         if ( clause.length == 2){
@@ -165,16 +164,28 @@ public class ComputeBiImplicationFormula extends AComputation<List<BiImplies>> {
         return new BiImplies(leftExpression,rightExpression);
     }
 
-    private boolean notRelevantBiImplies(BiImplies biIm1, BiImplies biIm2) {
-        List<String> biIm1Right = biIm1.getRightExpression().getVariables().stream().map(Variable::getName).sorted().collect(Collectors.toList());
-        List<String> biIm1Left = biIm1.getLeftExpression().getVariables().stream().map(Variable::getName).sorted().collect(Collectors.toList());
-        List<String> biIm2Right = biIm2.getRightExpression().getVariables().stream().map(Variable::getName).sorted().collect(Collectors.toList());
-        List<String> biIm2Left = biIm2.getLeftExpression().getVariables().stream().map(Variable::getName).sorted().collect(Collectors.toList());
-        return ((biIm1Right.size() == biIm2Right.size() && IntStream.range(0,biIm1Right.size()).allMatch(i->biIm1Right.get(i).equals(biIm2Right.get(i))) )
-                && (biIm1Left.size() == biIm2Left.size() && IntStream.range(0,biIm1Left.size()).allMatch(i->biIm1Left.get(i).equals(biIm2Left.get(i)))))
-                || ((biIm1Right.size() == biIm2Left.size() && IntStream.range(0,biIm1Right.size()).allMatch(i->biIm1Right.get(i).equals(biIm2Left.get(i))) )
-                && (biIm1Left.size() == biIm2Right.size() && IntStream.range(0,biIm1Left.size()).allMatch(i->biIm1Left.get(i).equals(biIm2Right.get(i)))));
+    private boolean equalsBiImplies(BiImplies biIm1, BiImplies biIm2) {
+        IFormula cnf1 = Computations.of((IFormula) biIm1).map(ComputeNNFFormula::new).map(ComputeCNFFormula::new).compute();
+        IFormula cnf2 = Computations.of((IFormula) biIm2).map(ComputeNNFFormula::new).map(ComputeCNFFormula::new).compute();
+        Comparator<IExpression> comparator = (formula1, formula2) -> {
+            String exp1String = formula1.toString();
+            String exp2String = formula2.toString();
+            if (formula1 instanceof Or && formula2 instanceof Or) {
+                Optional<String> exp1Result = formula1.getChildren().stream().map(x -> x.getChildren().get(0).getName()).reduce((y1, y2) -> y1 + y2);
+                Optional<String> exp2Result = formula2.getChildren().stream().map(x -> x.getChildren().get(0).getName()).reduce((y1, y2) -> y1 + y2);
+                if (exp1Result.isPresent() && exp2Result.isPresent()) {
+                    exp1String = exp1Result.get();
+                    exp2String = exp2Result.get();
+                }
+            }
+            return exp1String.compareTo(exp2String);
+        };
+        cnf1.sort(comparator);
+        cnf2.sort(comparator);
+        return cnf1.equalsTree(cnf2);
+
     }
+
 
 
 }
