@@ -37,20 +37,20 @@ public class PreprocessImGraph extends IndeterminatePreprocess{
             return true;
         }).toArray());
 
-        List<int[]> weakClauses = visitor.weakClauses();
-        for (int[] clause : weakClauses) {
-            int hidden = 0;
-            for (int lit : clause) {
-                if (hiddenVariables.contains(Math.abs(lit))) {
-                    if (hidden != 0) break;
-                    hidden = lit;
-                }
-            }
-            int finalHidden = hidden;
-            if (hidden != 0 && visitor.weakLink(hidden, Arrays.stream(clause).filter(lit -> finalHidden != lit).toArray())) {
-                hiddenVariables = hiddenVariables.removeAllVariables(new BooleanAssignment(Math.abs(hidden)));
-            }
-        }
+//        List<int[]> weakClauses = visitor.weakClauses();
+//        for (int[] clause : weakClauses) {
+//            int hidden = 0;
+//            for (int lit : clause) {
+//                if (hiddenVariables.contains(Math.abs(lit))) {
+//                    if (hidden != 0) break;
+//                    hidden = lit;
+//                }
+//            }
+//            int finalHidden = hidden;
+//            if (hidden != 0 && visitor.weakLink(hidden, Arrays.stream(clause).filter(lit -> finalHidden != lit).toArray())) {
+//                hiddenVariables = hiddenVariables.removeAllVariables(new BooleanAssignment(Math.abs(hidden)));
+//            }
+//        }
         return Result.of(hiddenVariables);
     }
 }
