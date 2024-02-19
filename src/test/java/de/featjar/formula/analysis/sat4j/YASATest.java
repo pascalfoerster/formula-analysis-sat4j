@@ -78,6 +78,21 @@ public class YASATest extends Common {
         assertFullCoverageWithAllAlgorithms(loadModel("GPL/model.xml"), 3);
     }
 
+    @Test
+    void modelWithFreeVariablesHas1WiseCoverage() {
+        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 1);
+    }
+
+    @Test
+    void modelWithFreeVariablesHas2WiseCoverage() {
+        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 2);
+    }
+
+    @Test
+    void modelWithFreeVariablesHas3WiseCoverage() {
+        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 3);
+    }
+
     //	@Test
     void embToolkitHas2WiseCoverage() {
         assertFullCoverage(loadModel("EMBToolkit/model.xml"), 2);

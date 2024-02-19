@@ -88,7 +88,7 @@ public class YASA extends ASAT4JAnalysis<BooleanSolutionList> {
                 Computations.of(new BooleanAssignment()),
                 Computations.of(2),
                 Computations.of(Integer.MAX_VALUE),
-                Computations.of(2),
+                Computations.of(1),
                 Computations.of(new BooleanAssignmentList()),
                 new MIGBuilder(booleanClauseList));
     }

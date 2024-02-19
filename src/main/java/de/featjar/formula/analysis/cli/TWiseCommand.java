@@ -20,16 +20,23 @@
  */
 package de.featjar.formula.analysis.cli;
 
+import de.featjar.base.FeatJAR;
 import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.IO;
+import de.featjar.formula.analysis.VariableMap;
+import de.featjar.formula.analysis.bool.BooleanAssignmentSpace;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.BooleanSolution;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
 import de.featjar.formula.analysis.sat4j.twise.YASA;
+import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
 import de.featjar.formula.structure.formula.IFormula;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 public class TWiseCommand extends ASAT4JAnalysisCommand<BooleanSolutionList, BooleanSolutionList> {
@@ -69,11 +76,28 @@ public class TWiseCommand extends ASAT4JAnalysisCommand<BooleanSolutionList, Boo
     }
 
     @Override
+    protected boolean writeToOutputFile(BooleanSolutionList list, Path outputPath) {
+        try {
+            IO.save(
+                    new BooleanAssignmentSpace(VariableMap.of(inputFormula), List.of(list.getAll())),
+                    outputPath,
+                    new BooleanSolutionListCSVFormat());
+            return true;
+        } catch (IOException e) {
+            FeatJAR.log().error(e);
+        }
+        return false;
+    }
+
+    @Override
     public String serializeResult(BooleanSolutionList list) {
         StringBuilder sb = new StringBuilder();
         for (BooleanSolution booleanSolution : list) {
-            sb.append("\n");
             sb.append(booleanSolution.print());
+            sb.append("\n");
+        }
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
     }

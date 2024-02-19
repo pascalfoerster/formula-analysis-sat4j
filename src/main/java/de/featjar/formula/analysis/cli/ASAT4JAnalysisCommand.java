@@ -22,6 +22,7 @@ package de.featjar.formula.analysis.cli;
 
 import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
+import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.IO;
 import de.featjar.formula.analysis.AAnalysisCommand;
@@ -52,21 +53,25 @@ public abstract class ASAT4JAnalysisCommand<T, U> extends AAnalysisCommand<T> {
             .setValidator(timeout -> !timeout.isNegative())
             .setDefaultValue(Duration.ZERO);
 
+    protected IFormula inputFormula;
+
     @Override
     public List<Option<?>> getOptions() {
         return ICommand.addOptions(super.getOptions(), SAT_TIMEOUT_OPTION, RANDOM_SEED_OPTION);
     }
 
     @Override
-    public IComputation<T> newComputation() {
-        return newAnalysis(optionParser
+    protected IComputation<T> newComputation() {
+        inputFormula = optionParser
                 .getResult(INPUT_OPTION)
                 .flatMap(p -> IO.load(p, FormulaFormats.getInstance()))
-                .toComputation()
+                .orElseThrow();
+        return newAnalysis(Computations.of(inputFormula)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
                 .map(BooleanRepresentationComputation::new));
     }
 
-    public abstract IComputation<T> newAnalysis(BooleanRepresentationComputation<IFormula, BooleanClauseList> formula);
+    protected abstract IComputation<T> newAnalysis(
+            BooleanRepresentationComputation<IFormula, BooleanClauseList> formula);
 }
