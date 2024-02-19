@@ -13,22 +13,44 @@
 	<struct>
 		<and abstract="true" mandatory="true" name="Root">
 			<and name="a">
+				<graphics key="collapsed" value="false"/>
 				<feature hidden="true" mandatory="true" name="b"/>
 			</and>
 			<and name="c">
+				<graphics key="collapsed" value="false"/>
 				<feature hidden="true" name="d"/>
 			</and>
 			<and name="e">
+				<graphics key="collapsed" value="false"/>
 				<feature name="f"/>
 				<feature name="g"/>
 			</and>
 			<and name="i">
+				<graphics key="collapsed" value="false"/>
 				<feature name="j"/>
 				<feature hidden="true" name="k"/>
 			</and>
 			<and name="l">
+				<graphics key="collapsed" value="false"/>
 				<feature hidden="true" name="m"/>
 			</and>
+			<or name="n">
+				<graphics key="collapsed" value="false"/>
+				<feature name="o"/>
+				<feature name="p"/>
+			</or>
+			<alt name="q">
+				<graphics key="collapsed" value="false"/>
+				<feature name="r"/>
+				<feature name="s"/>
+				<feature name="t"/>
+			</alt>
+			<feature name="u"/>
+			<feature name="v"/>
+			<feature name="w"/>
+			<feature name="x"/>
+			<feature name="y"/>
+			<feature name="z"/>
 		</and>
 	</struct>
 	<constraints>
@@ -93,6 +115,74 @@
 				</disj>
 				<var>k</var>
 			</imp>
+		</rule>
+		<rule>
+			<disj>
+				<var>u</var>
+				<disj>
+					<var>v</var>
+					<disj>
+						<var>w</var>
+						<disj>
+							<var>x</var>
+							<disj>
+								<var>y</var>
+								<var>z</var>
+							</disj>
+						</disj>
+					</disj>
+				</disj>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>u</var>
+				</not>
+				<not>
+					<var>w</var>
+				</not>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>u</var>
+				</not>
+				<not>
+					<var>v</var>
+				</not>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>u</var>
+				</not>
+				<not>
+					<var>z</var>
+				</not>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>u</var>
+				</not>
+				<not>
+					<var>x</var>
+				</not>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>u</var>
+				</not>
+				<not>
+					<var>y</var>
+				</not>
+			</disj>
 		</rule>
 	</constraints>
 </featureModel>

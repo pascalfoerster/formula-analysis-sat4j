@@ -21,6 +21,12 @@
 			</and>
 			<feature hidden="true" name="f"/>
 			<feature hidden="true" name="g"/>
+			<feature name="h"/>
+			<feature hidden="true" name="i"/>
+			<and name="k">
+				<feature name="l"/>
+				<feature hidden="true" name="m"/>
+			</and>
 		</and>
 	</struct>
 	<constraints>
@@ -32,6 +38,26 @@
 		</rule>
 		<rule>
 			<var>g</var>
+		</rule>
+		<rule>
+			<not>
+				<var>h</var>
+			</not>
+		</rule>
+		<rule>
+			<disj>
+				<var>h</var>
+				<var>i</var>
+			</disj>
+		</rule>
+		<rule>
+			<imp>
+				<conj>
+					<var>k</var>
+					<var>m</var>
+				</conj>
+				<var>m</var>
+			</imp>
 		</rule>
 	</constraints>
 </featureModel>
