@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<graphics key="autolayoutconstraints" value="false"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showconstraints" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and abstract="true" mandatory="true" name="Root">
+			<and mandatory="true" name="a">
+				<feature name="e"/>
+				<feature name="f"/>
+			</and>
+			<and mandatory="true" name="b">
+				<feature name="g"/>
+				<feature name="h"/>
+			</and>
+			<or mandatory="true" name="c">
+				<feature name="i"/>
+				<feature name="j"/>
+			</or>
+			<alt mandatory="true" name="d">
+				<feature name="k"/>
+				<feature name="l"/>
+			</alt>
+			<and name="m">
+				<feature name="n"/>
+				<feature name="o"/>
+			</and>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<not>
+				<var>e</var>
+			</not>
+		</rule>
+		<rule>
+			<eq>
+				<var>e</var>
+				<conj>
+					<var>f</var>
+					<var>g</var>
+				</conj>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>b</var>
+				<disj>
+					<var>f</var>
+					<var>g</var>
+				</disj>
+			</eq>
+		</rule>
+		<rule>
+			<imp>
+				<var>n</var>
+				<not>
+					<conj>
+						<var>o</var>
+						<var>e</var>
+					</conj>
+				</not>
+			</imp>
+		</rule>
+		<rule>
+			<disj>
+				<not>
+					<var>b</var>
+				</not>
+				<disj>
+					<var>g</var>
+					<var>f</var>
+				</disj>
+			</disj>
+		</rule>
+		<rule>
+			<disj>
+				<var>d</var>
+				<var>n</var>
+			</disj>
+		</rule>
+		<rule>
+			<eq>
+				<disj>
+					<var>f</var>
+					<var>i</var>
+				</disj>
+				<var>b</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<var>e</var>
+				<var>e</var>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<not>
+					<var>b</var>
+				</not>
+				<not>
+					<disj>
+						<var>f</var>
+						<var>g</var>
+					</disj>
+				</not>
+			</eq>
+		</rule>
+		<rule>
+			<eq>
+				<not>
+					<disj>
+						<var>f</var>
+						<var>g</var>
+					</disj>
+				</not>
+				<not>
+					<var>b</var>
+				</not>
+			</eq>
+		</rule>
+		<rule>
+			<imp>
+				<conj>
+					<var>n</var>
+					<conj>
+						<var>o</var>
+						<var>h</var>
+					</conj>
+				</conj>
+				<not>
+					<var>a</var>
+				</not>
+			</imp>
+		</rule>
+		<rule>
+			<eq>
+				<var>m</var>
+				<eq>
+					<var>e</var>
+					<not>
+						<var>h</var>
+					</not>
+				</eq>
+			</eq>
+		</rule>
+		<rule>
+			<imp>
+				<not>
+					<var>e</var>
+				</not>
+				<disj>
+					<var>f</var>
+					<var>g</var>
+				</disj>
+			</imp>
+		</rule>
+		<rule>
+			<imp>
+				<not>
+					<imp>
+						<var>a</var>
+						<var>e</var>
+					</imp>
+				</not>
+				<disj>
+					<var>f</var>
+					<var>g</var>
+				</disj>
+			</imp>
+		</rule>
+	</constraints>
+</featureModel>
