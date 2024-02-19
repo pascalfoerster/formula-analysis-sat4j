@@ -57,11 +57,11 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
         BooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
+        SAT4JSolutionSolver solver = initializeSolver(dependencyList);
         int variableSize = clauseList.getVariableCount();
         if(hiddenVariables.isEmpty()) return Result.of(new BooleanAssignment());
-        BooleanClauseList updateClauseList = new BooleanClauseList(clauseList.getVariableCount()+hiddenVariables.size());
-        updateClauseList.addAll(clauseList);
-        for (final BooleanClause clause: new BooleanClauseList(updateClauseList)) {
+        solver.getClauseList().setVariableCount(variableSize+hiddenVariables.size());
+        for (final BooleanClause clause: clauseList) {
             int[] removeLiterals = clause.retainAllVariables(hiddenVariables.get());
             int[] newLiterals = clause.removeAllVariables(hiddenVariables.get());
             if(newLiterals.length !=  clause.size()) {
@@ -70,17 +70,16 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
                             ?  variableSize + hiddenVariables.indexOfVariable(removeLiterals[i]) + 1
                             : -variableSize - hiddenVariables.indexOfVariable(-removeLiterals[i]) - 1;
                 }
-                updateClauseList.add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));;
+                solver.getClauseList().add(new BooleanClause(IntStream.concat(IntStream.of(newLiterals),IntStream.of(removeLiterals)).toArray()));;
             }
         }
         final ExpandableIntegerList resultList = new ExpandableIntegerList();
         for (final int variable : hiddenVariables.get()) {
-            BooleanClauseList modClauseList = new BooleanClauseList(updateClauseList);
-            modClauseList.add(new BooleanClause(variable));
-            modClauseList.add(new BooleanClause(-variableSize-hiddenVariables.indexOfVariable(variable)-1));
-            final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(modClauseList);
+            int variableS = -variableSize-hiddenVariables.indexOfVariable(variable)-1;
+            solver.getAssignment().add(variable);
+            solver.getAssignment().add(variableS);
 
-            final Result<Boolean> hasSolution = modSolver.hasSolution();
+            final Result<Boolean> hasSolution = solver.hasSolution();
             if (hasSolution.valueEquals(Boolean.FALSE)) {
             } else if (hasSolution.isEmpty()) {
                 // reportTimeout();
@@ -89,6 +88,8 @@ public class ComputeIndeterminate extends ASAT4JAnalysis.Solution<BooleanAssignm
             } else {
                 throw new AssertionError(hasSolution);
             }
+            solver.getAssignment().remove();
+            solver.getAssignment().remove();
         }
         return Result.of(new BooleanAssignment(resultList.toIntStream().toArray()));
     }
