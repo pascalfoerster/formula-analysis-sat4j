@@ -21,6 +21,7 @@
 
 package de.featjar.formula.analysis.sat4j.indeterminate;
 
+import java.util.Arrays;
 import java.util.List;
 
 import de.featjar.base.computation.*;
@@ -30,6 +31,7 @@ import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.sat4j.ASAT4JAnalysis;
+import de.featjar.formula.analysis.sat4j.ComputeCoreDeadVariablesSAT4J;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
 import de.featjar.formula.transform.CNFSlicer;
 import org.sat4j.core.VecInt;
@@ -62,7 +64,7 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
         BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
         BooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
 
-        BooleanClauseList relevantClauses = new BooleanClauseList(0);
+        BooleanClauseList relevantClauses = new BooleanClauseList(clauseList.getVariableCount());
         VecInt potentialResultList = new VecInt();
         final ExpandableIntegerList resultList = new ExpandableIntegerList();
         variableLoop:
@@ -100,22 +102,42 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
             final BooleanClauseList slicedCNF = new CNFSlicer(Computations.of(clauseList))
                     .set(CNFSlicer.VARIABLES_OF_INTEREST, hiddenVariables.removeAll(new BooleanAssignment(literal)))
                     .compute();
+            if (literal == 672) {
+
+                BooleanAssignment booleanAssignment = new ComputeCoreDeadVariablesSAT4J(Computations.of(slicedCNF)).compute();
+
+
+
+                BooleanAssignment booleanAssignment2 = new ComputeCoreDeadVariablesSAT4J(Computations.of(clauseList)).compute();
+                System.out.println(Arrays.toString(booleanAssignment.stream().filter(e -> !booleanAssignment2.contains(e)).toArray()));
+
+                final SAT4JSolutionSolver modSolver1 = new SAT4JSolutionSolver(slicedCNF);
+                System.out.println(modSolver1.hasSolution(531).get());
+
+                final SAT4JSolutionSolver modSolver2 = new SAT4JSolutionSolver(slicedCNF);
+                System.out.println(modSolver2.hasSolution().get());
+            }
+
+            relevantClauses.addAll(slicedCNF);
             for (final BooleanClause clause : slicedCNF) {
-                    int[] newClause = cleanClause(clause,literal);
-                    if(newClause != null) {
+                if (hiddenVariables.containsVariable(literal)) {
+                    int[] newClause = cleanClause(clause, literal);
+                    if (newClause != null) {
                         if (newClause.length > 0) {
                             relevantClauses.add(new BooleanClause(newClause));
                         } else {
+                            relevantClauses.clear();
                             continue sliceLoop;
                         }
                     }
+                }
 
             }
             final SAT4JSolutionSolver modSolver = new SAT4JSolutionSolver(relevantClauses);
             final Result<Boolean> hasSolution = modSolver.hasSolution();
             if (hasSolution.valueEquals(Boolean.FALSE)) {
             } else if (hasSolution.isEmpty()) {
-                // reportTimeout();
+                System.out.println("timeout   "+ literal );;
             } else if (hasSolution.valueEquals(Boolean.TRUE)) {
                 resultList.add(literal);
             } else {
