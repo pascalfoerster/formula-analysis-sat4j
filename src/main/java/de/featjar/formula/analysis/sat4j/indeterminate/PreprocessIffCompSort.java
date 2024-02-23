@@ -118,26 +118,34 @@ public class PreprocessIffCompSort extends IndeterminatePreprocessFormula{
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
+        float rank = Float.MAX_VALUE;
         if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
             List<Variable> variables = rightExpression.getVariables();
-            return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
-        } else if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
+            rank =  getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
+            if(rank == Float.MAX_VALUE ) return rank;
+        }
+        if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
             List<Variable> variables = leftExpression.getVariables();
-            return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
+            float value = getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
+            if(rank != Float.MAX_VALUE)rank= value*rank;
+            else rank = value;
+            if(rank == Float.MAX_VALUE) return  rank;
         }
-        if(leftLiteral != null){
-            if(rightExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(),mapping)))){
-                return 0.0000001f;
+        if(rank == Float.MAX_VALUE) {
+            if (leftLiteral != null) {
+                if (rightExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(), mapping)))) {
+                    return 0.0000001f;
+                }
+            } else if (rightLiteral != null) {
+                if (leftExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(), mapping)))) {
+                    return 0.0000001f;
+                }
+            } else if (rightExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(), mapping)))
+                    && leftExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(), mapping)))) {
+                return 0.000001f;
             }
-        }else if(rightLiteral != null){
-            if(leftExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(),mapping)))){
-                return 0.0000001f;
-            }
-        }else if(rightExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(),mapping)))
-                &&leftExpression.getVariables().stream().anyMatch(variable -> hiddenVariables.contains(getMapping(variable.getName(),mapping)))){
-            return 0.000001f;
         }
-        return Float.MAX_VALUE;
+        return rank;
     }
     private float getExpressionRank(int[] featureIds,HashMap<Integer,Integer> rankFeature) {
         float sum = 0;

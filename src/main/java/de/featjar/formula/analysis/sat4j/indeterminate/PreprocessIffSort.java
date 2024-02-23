@@ -107,14 +107,18 @@ public class PreprocessIffSort extends IndeterminatePreprocessFormula {
         IExpression rightExpression = biImplies.getRightExpression();
         Literal leftLiteral = getLiteral(leftExpression);
         Literal rightLiteral = getLiteral(rightExpression);
+        float rank= Float.MAX_VALUE;
         if(leftLiteral != null && hiddenVariables.contains(unwrapVariable(leftLiteral,mapping))){
             List<Variable> variables = rightExpression.getVariables();
-            return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
-        } else if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
-            List<Variable> variables = leftExpression.getVariables();
-            return getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
+            rank=  getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
         }
-        return Float.MAX_VALUE;
+        if (rightLiteral != null && hiddenVariables.contains(unwrapVariable(rightLiteral,mapping))) {
+            List<Variable> variables = leftExpression.getVariables();
+            float value=  getExpressionRank(variables.stream().mapToInt(variable -> getMapping(variable.getName(),mapping)).filter(hiddenVariables::contains).toArray(),rankHidden);
+            if(rank != Float.MAX_VALUE)rank= value*rank;
+            else rank = value;
+        }
+        return rank;
     }
     private float getExpressionRank(int[] featureIds,HashMap<Integer,Integer> rankFeature) {
         float sum = 0;

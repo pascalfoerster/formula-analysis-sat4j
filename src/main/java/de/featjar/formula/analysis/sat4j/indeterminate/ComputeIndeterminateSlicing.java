@@ -102,22 +102,6 @@ public class ComputeIndeterminateSlicing extends ASAT4JAnalysis.Solution<Boolean
             final BooleanClauseList slicedCNF = new CNFSlicer(Computations.of(clauseList))
                     .set(CNFSlicer.VARIABLES_OF_INTEREST, hiddenVariables.removeAll(new BooleanAssignment(literal)))
                     .compute();
-            if (literal == 672) {
-
-                BooleanAssignment booleanAssignment = new ComputeCoreDeadVariablesSAT4J(Computations.of(slicedCNF)).compute();
-
-
-
-                BooleanAssignment booleanAssignment2 = new ComputeCoreDeadVariablesSAT4J(Computations.of(clauseList)).compute();
-                System.out.println(Arrays.toString(booleanAssignment.stream().filter(e -> !booleanAssignment2.contains(e)).toArray()));
-
-                final SAT4JSolutionSolver modSolver1 = new SAT4JSolutionSolver(slicedCNF);
-                System.out.println(modSolver1.hasSolution(531).get());
-
-                final SAT4JSolutionSolver modSolver2 = new SAT4JSolutionSolver(slicedCNF);
-                System.out.println(modSolver2.hasSolution().get());
-            }
-
             relevantClauses.addAll(slicedCNF);
             for (final BooleanClause clause : slicedCNF) {
                 if (hiddenVariables.containsVariable(literal)) {

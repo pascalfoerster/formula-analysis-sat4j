@@ -182,7 +182,7 @@ public class CNFSlicer extends AComputation<BooleanClauseList> {
 
     private void createClauseLists() {
         for (final BooleanClause sortedIntegerList : orgCNF) {
-            addNewClause(new DirtyClause(sortedIntegerList.get()));
+            addNewClause(DirtyClause.createClause(sortedIntegerList.get()));
         }
 
         cleanLiteralListIndexList.ensureCapacity(cleanLiteralListIndexList.size() + newCleanClauseList.size());
