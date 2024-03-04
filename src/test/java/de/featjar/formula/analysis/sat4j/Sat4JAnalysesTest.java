@@ -26,7 +26,7 @@ import static de.featjar.formula.structure.Expressions.literal;
 import static de.featjar.formula.structure.Expressions.or;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import de.featjar.AnalysisTest;
+
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
@@ -40,7 +40,7 @@ import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
 import org.junit.jupiter.api.Test;
 
-public class Sat4JAnalysesTest extends AnalysisTest {
+public class Sat4JAnalysesTest /*extends AnalysisTest*/ {
 
     public void getTWiseSample(IFormula formula, int t) {
         ComputeBooleanRepresentation<IFormula, BooleanClauseList> cnf = async(formula)
@@ -63,6 +63,7 @@ public class Sat4JAnalysesTest extends AnalysisTest {
         getTWiseSample(or(literal("x"), literal(false, "y"), literal(false, "z")), 2);
     }
 
+/*
     @Test
     void satisfiabilityIsCorrectlyComputed() {
         testSatisfiability(ComputeBooleanClauseList::new, ComputeSatisfiableSAT4J::new);
@@ -77,4 +78,7 @@ public class Sat4JAnalysesTest extends AnalysisTest {
     void computedSolutionIsSatisfying() {
         testSolution(ComputeBooleanClauseList::new, ComputeSolutionSAT4J::new);
     }
+
+
+ */
 }

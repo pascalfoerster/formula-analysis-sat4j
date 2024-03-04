@@ -32,24 +32,19 @@ import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.analysis.bool.IBooleanRepresentation;
 import de.featjar.formula.analysis.mig.solver.MIGBuilder;
 import de.featjar.formula.analysis.mig.solver.ModalImplicationGraph;
-import de.featjar.formula.analysis.sat4j.ComputeCoreDeadVariablesSAT4J;
-import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
+import de.featjar.formula.analysis.sat4j.ComputeCoreSAT4J;
+import de.featjar.formula.io.HiddenFormulaFormats;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.*;
 import de.featjar.formula.structure.formula.predicate.Literal;
-import de.featjar.formula.transform.CNFSlicer;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
 
-import java.nio.channels.Pipe;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,13 +68,13 @@ public class ComputeIndeterminateTest extends Common {
     @BeforeAll
     static void createTests(){
         for(int i = 1; i < 6; i++){
-            Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = loadHiddenModel("testFeatureModels/testIndeterminateFeatureModels/model"+i+".xml");
+            Pair<IFormula,Pair<List<String>,List<BiImplies>>> model = load("testFeatureModels/testIndeterminateFeatureModels/model"+i+".xml", HiddenFormulaFormats.getInstance());
             IComputation<IFormula> formula = Computations.of(model.getKey());
             formulas.add(formula);
-            BooleanRepresentationComputation<IFormula, IBooleanRepresentation> cnf =
+            ComputeBooleanRepresentation<IFormula, IBooleanRepresentation> cnf =
                     formula.map(ComputeNNFFormula::new)
                             .map(ComputeCNFFormula::new)
-                            .map(BooleanRepresentationComputation::new);
+                            .map(ComputeBooleanRepresentation::new);
             clauses.add(cnf.map(Computations::getKey));
             VariableMap variableMap = cnf.map(Computations::getValue).compute();
             variables.add(variableMap);
@@ -244,7 +239,7 @@ public class ComputeIndeterminateTest extends Common {
 
     @Test
     void testCoreDeadSimplifier() {
-        BooleanAssignment assignment = await(clauses.get(4).cast(BooleanClauseList.class).map(ComputeCoreDeadVariablesSAT4J::new));
+        BooleanAssignment assignment = await(clauses.get(4).cast(BooleanClauseList.class).map(ComputeCoreSAT4J::new));
         IFormula formula = formulas.get(4).compute();
         formula.getChildren().get(26).getChildren().get(1).replaceChild(1,new Literal(false,"h"));
 
