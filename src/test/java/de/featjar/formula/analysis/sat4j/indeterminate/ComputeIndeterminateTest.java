@@ -65,8 +65,7 @@ public class ComputeIndeterminateTest extends Common {
     private static ArrayList<IComputation<IBooleanRepresentation>> clauses= new ArrayList<>();
     private static ArrayList<VariableMap> variables = new ArrayList<>();
     private static ArrayList<BooleanAssignment> hiddenVariables = new ArrayList<>();
-    private static ArrayList<BooleanAssignment> deadFeatures = new ArrayList<>();
-    private static ArrayList<BooleanAssignment> coreFeatures = new ArrayList<>();
+    private static ArrayList<BooleanAssignment> coredeadFeatures = new ArrayList<>();
     private static ArrayList<List<BiImplies>> biImplies = new ArrayList<>();
     private static ModalImplicationGraph modalImplicationGraph;
 
@@ -92,10 +91,8 @@ public class ComputeIndeterminateTest extends Common {
                 .map(ComputeCNFFormula::new).compute();
 
 
-        coreFeatures.add( new BooleanAssignment(variables.get(1).get("h").get()));
-        deadFeatures.add(  new BooleanAssignment(variables.get(1).get("g").get()));
-        coreFeatures.add( new BooleanAssignment(variables.get(2).get("h").get()));
-        deadFeatures.add(  new BooleanAssignment(variables.get(2).get("g").get()));
+        coredeadFeatures.add( new BooleanAssignment(variables.get(1).get("h").get(),-variables.get(1).get("g").get()));
+        coredeadFeatures.add( new BooleanAssignment(variables.get(2).get("h").get(),-variables.get(2).get("g").get()));
 
     }
 
@@ -147,8 +144,7 @@ public class ComputeIndeterminateTest extends Common {
         BooleanAssignment hiddenVariables = new PreprocessIff(formulas.get(1))
                 .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
                 .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
-                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(0))
-                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(0))
+                .set(PreprocessIff.CORE_DEAD_FEATURE, coredeadFeatures.get(0))
                 .compute();
         List<String> indeterminate = hiddenVariables.streamValues()
                 .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
@@ -158,8 +154,7 @@ public class ComputeIndeterminateTest extends Common {
         BooleanAssignment hiddenVariables2 = new PreprocessIff(formulas.get(1))
                 .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
                 .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
-                .set(PreprocessIff.CORE_FEATURE, new BooleanAssignment())
-                .set(PreprocessIff.DEAD_FEATURE, new BooleanAssignment())
+                .set(PreprocessIff.CORE_DEAD_FEATURE, new BooleanAssignment())
                 .compute();
         List<String> indeterminate2 = hiddenVariables2.streamValues()
                 .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
@@ -172,8 +167,7 @@ public class ComputeIndeterminateTest extends Common {
         BooleanAssignment hiddenVariables = new PreprocessIffV2(formulas.get(1))
                 .set(PreprocessIff.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
                 .set(PreprocessIff.VARIABLE_MAP, variables.get(1))
-                .set(PreprocessIff.CORE_FEATURE, coreFeatures.get(0))
-                .set(PreprocessIff.DEAD_FEATURE, deadFeatures.get(0))
+                .set(PreprocessIff.CORE_DEAD_FEATURE,coredeadFeatures.get(0))
                 .compute();
         List<String> indeterminate = hiddenVariables.streamValues()
                 .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
@@ -183,8 +177,7 @@ public class ComputeIndeterminateTest extends Common {
         BooleanAssignment hiddenVariables2 = new PreprocessIffV2(formulas.get(2))
                 .set(PreprocessIffV2.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
                 .set(PreprocessIffV2.VARIABLE_MAP, variables.get(2))
-                .set(PreprocessIffV2.CORE_FEATURE, coreFeatures.get(1))
-                .set(PreprocessIffV2.DEAD_FEATURE, deadFeatures.get(1))
+                .set(PreprocessIffV2.CORE_DEAD_FEATURE, coredeadFeatures.get(1))
                 .compute();
         List<String> indeterminate2 = hiddenVariables2.streamValues()
                 .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()
@@ -198,8 +191,7 @@ public class ComputeIndeterminateTest extends Common {
         BooleanAssignment hiddenVariables = new PreprocessIffSort(formulas.get(1))
                 .set(PreprocessIffSort.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(1))
                 .set(PreprocessIffSort.VARIABLE_MAP, variables.get(1))
-                .set(PreprocessIffSort.CORE_FEATURE, coreFeatures.get(0))
-                .set(PreprocessIffSort.DEAD_FEATURE, deadFeatures.get(0))
+                .set(PreprocessIffSort.CORE_DEAD_FEATURE, coredeadFeatures.get(0))
                 .compute();
         List<String> indeterminate = hiddenVariables.streamValues()
                 .map(v ->  variables.get(1).get(v.getKey()).get()).sorted()
@@ -228,8 +220,7 @@ public class ComputeIndeterminateTest extends Common {
                 .set(PreprocessIffComp.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
                 .set(PreprocessIffComp.VARIABLE_MAP, variables.get(2))
                 .set(PreprocessIffComp.EXPRESSION_MAX_LENGTH,5)
-                .set(PreprocessIffComp.CORE_FEATURE, coreFeatures.get(1))
-                .set(PreprocessIffComp.DEAD_FEATURE, deadFeatures.get(1))
+                .set(PreprocessIffComp.CORE_DEAD_FEATURE,coredeadFeatures.get(1))
                 .compute();
         List<String> indeterminate = hiddenVariables.streamValues()
                 .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()
@@ -243,8 +234,7 @@ public class ComputeIndeterminateTest extends Common {
                 .set(PreprocessIffCompSort.VARIABLES_OF_INTEREST, ComputeIndeterminateTest.hiddenVariables.get(2))
                 .set(PreprocessIffCompSort.VARIABLE_MAP, variables.get(2))
                 .set(PreprocessIffCompSort.EXPRESSION_MAX_LENGTH,5)
-                .set(PreprocessIffCompSort.CORE_FEATURE, coreFeatures.get(1))
-                .set(PreprocessIffCompSort.DEAD_FEATURE, deadFeatures.get(1))
+                .set(PreprocessIffCompSort.CORE_DEAD_FEATURE, coredeadFeatures.get(1))
                 .compute();
         List<String> indeterminate = hiddenVariables.streamValues()
                 .map(v ->  variables.get(2).get(v.getKey()).get()).sorted()

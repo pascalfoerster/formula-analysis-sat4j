@@ -25,10 +25,7 @@ import java.util.stream.Collectors;
  * TODO Discuss, because maybe it to complex
  */
 public class PreprocessIffComp extends IndeterminatePreprocessFormula{
-    public static final Dependency<BooleanAssignment> DEAD_FEATURE =
-            Dependency.newDependency(BooleanAssignment.class);
-    public static final Dependency<BooleanAssignment> CORE_FEATURE =
-            Dependency.newDependency(BooleanAssignment.class);
+
 
     public static final Dependency<Integer> EXPRESSION_MAX_LENGTH =
             Dependency.newDependency(Integer.class);
@@ -38,7 +35,7 @@ public class PreprocessIffComp extends IndeterminatePreprocessFormula{
     private final ArrayList<Pair<String,List<Integer>>> definedFormula = new ArrayList<>();
     private int expressionMaxLength;
     public PreprocessIffComp(IComputation<IFormula> formula) {
-        super(formula, Computations.of(new BooleanAssignment()),Computations.of(new BooleanAssignment()),Computations.of(2));
+        super(formula,Computations.of(2));
     }
 
 
@@ -47,17 +44,14 @@ public class PreprocessIffComp extends IndeterminatePreprocessFormula{
         hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
         mapping = VARIABLE_MAP.get(dependencyList);
         IFormula formula = FORMULA.get(dependencyList);
-        BooleanAssignment deadVariables = DEAD_FEATURE.get(dependencyList);
-        BooleanAssignment coreFeatures = CORE_FEATURE.get(dependencyList);
         expressionMaxLength = EXPRESSION_MAX_LENGTH.get(dependencyList);
         // check whether conditions for preprocess are satisfied
         if(hiddenVariables.isEmpty() || mapping.isEmpty() || !(formula instanceof  And)) return Result.of(hiddenVariables);
-        if(!deadVariables.isEmpty() || ! coreFeatures.isEmpty()){
-            hiddenVariables = new BooleanAssignment(hiddenVariables.stream().filter((hidden ) ->
-                    !deadVariables.contains(hidden) && ! coreFeatures.contains(hidden)).toArray());
-            BooleanAssignment assignment = coreFeatures.addAll(deadVariables.inverse());
-            Result<IFormula> formulaResult = Reference.mutateClone(formula,reference -> Trees.traverse(reference,new CoreDeadSimplifier(assignment.toValueName(mapping))));
-            if(formulaResult.isPresent()) formula = formulaResult.get();
+        BooleanAssignment deadCoreVariables = CORE_DEAD_FEATURE.get(dependencyList);
+        Pair<BooleanAssignment, IFormula> updateDeCo = handleDeadAndCore(formula,deadCoreVariables,hiddenVariables,mapping);
+        if(updateDeCo != null) {
+            hiddenVariables = updateDeCo.getKey();
+            formula = updateDeCo.getValue();
         }
         for(IExpression child :formula.getChildren()){
             if(child instanceof BiImplies){
