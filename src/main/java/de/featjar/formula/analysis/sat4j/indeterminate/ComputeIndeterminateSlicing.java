@@ -31,7 +31,6 @@ import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.sat4j.ASAT4JAnalysis;
-import de.featjar.formula.analysis.sat4j.ComputeCoreDeadVariablesSAT4J;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
 import de.featjar.formula.transform.CNFSlicer;
 import org.sat4j.core.VecInt;
