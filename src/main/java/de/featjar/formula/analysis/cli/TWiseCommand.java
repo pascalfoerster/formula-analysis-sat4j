@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -29,9 +29,9 @@ import de.featjar.base.io.IO;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignmentSpace;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.BooleanSolution;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.analysis.sat4j.twise.YASA;
 import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
 import de.featjar.formula.structure.formula.IFormula;
@@ -65,7 +65,7 @@ public class TWiseCommand extends ASAT4JAnalysisCommand<BooleanSolutionList, Boo
 
     @Override
     public IComputation<BooleanSolutionList> newAnalysis(
-            BooleanRepresentationComputation<IFormula, BooleanClauseList> formula) {
+            ComputeBooleanRepresentation<IFormula, BooleanClauseList> formula) {
         return formula.map(Computations::getKey)
                 .map(YASA::new)
                 .set(YASA.T, optionParser.get(T_OPTION))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -30,7 +30,7 @@ import de.featjar.formula.analysis.bool.BooleanClauseList;
 import de.featjar.formula.analysis.bool.BooleanSolution;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
 import de.featjar.formula.analysis.sat4j.ASAT4JAnalysis;
-import de.featjar.formula.analysis.sat4j.ComputeCoreDeadVariablesSAT4J;
+import de.featjar.formula.analysis.sat4j.ComputeCoreSAT4J;
 import de.featjar.formula.analysis.sat4j.solver.ISelectionStrategy;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolutionSolver;
 import de.featjar.formula.analysis.sat4j.solver.SAT4JSolver;
@@ -58,7 +58,7 @@ public class TWiseStatisticGenerator extends ASAT4JAnalysis<CoverageStatistic> {
         super(
                 booleanClauseList,
                 Computations.of(2),
-                new ComputeCoreDeadVariablesSAT4J(booleanClauseList),
+                new ComputeCoreSAT4J(booleanClauseList),
                 Computations.of(new BooleanSolutionList()));
     }
 

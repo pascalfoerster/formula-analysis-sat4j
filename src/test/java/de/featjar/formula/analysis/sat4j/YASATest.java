@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -31,8 +31,8 @@ import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.BooleanSolutionList;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.analysis.sat4j.solver.ISelectionStrategy;
 import de.featjar.formula.analysis.sat4j.twise.CoverageStatistic;
 import de.featjar.formula.analysis.sat4j.twise.RelativeTWiseCoverageComputation;
@@ -55,7 +55,7 @@ public class YASATest extends Common {
 
     @Test
     void gplHas1WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("GPL/model.xml"), 1);
+        assertFullCoverageWithAllAlgorithms(loadFormula("GPL/model.xml"), 1);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class YASATest extends Common {
 
     @Test
     void gplHas2WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("GPL/model.xml"), 2);
+        assertFullCoverageWithAllAlgorithms(loadFormula("GPL/model.xml"), 2);
     }
 
     @Test
@@ -75,37 +75,37 @@ public class YASATest extends Common {
 
     @Test
     void gplHas3WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("GPL/model.xml"), 3);
+        assertFullCoverageWithAllAlgorithms(loadFormula("GPL/model.xml"), 3);
     }
 
     @Test
     void modelWithFreeVariablesHas1WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 1);
+        assertFullCoverageWithAllAlgorithms(loadFormula("testFeatureModels/model_with_free_variables.dimacs"), 1);
     }
 
     @Test
     void modelWithFreeVariablesHas2WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 2);
+        assertFullCoverageWithAllAlgorithms(loadFormula("testFeatureModels/model_with_free_variables.dimacs"), 2);
     }
 
     @Test
     void modelWithFreeVariablesHas3WiseCoverage() {
-        assertFullCoverageWithAllAlgorithms(loadModel("testFeatureModels/model_with_free_variables.dimacs"), 3);
+        assertFullCoverageWithAllAlgorithms(loadFormula("testFeatureModels/model_with_free_variables.dimacs"), 3);
     }
 
     //	@Test
     void embToolkitHas2WiseCoverage() {
-        assertFullCoverage(loadModel("EMBToolkit/model.xml"), 2);
+        assertFullCoverage(loadFormula("EMBToolkit/model.xml"), 2);
     }
 
     //	@Test
     void financial_servicesHas2WiseCoverage() {
-        assertFullCoverage(loadModel("financial_services/model.xml"), 2);
+        assertFullCoverage(loadFormula("financial_services/model.xml"), 2);
     }
 
     //	@Test
     public void testBothCoverageRandom() {
-        bothRandom(loadModel("models_stability_light/busybox_monthlySnapshot/2007-05-20_17-12-43/clean.dimacs"));
+        bothRandom(loadFormula("models_stability_light/busybox_monthlySnapshot/2007-05-20_17-12-43/clean.dimacs"));
     }
 
     //	@Test
@@ -116,13 +116,13 @@ public class YASATest extends Common {
 
     //	@Test
     public void variants() {
-        compareVariants(loadModel("models_stability_light/busybox_monthlySnapshot/2007-05-20_17-12-43/clean.dimacs"));
-        compareVariants(loadModel("EMBToolkit/model.xml"));
+        compareVariants(loadFormula("models_stability_light/busybox_monthlySnapshot/2007-05-20_17-12-43/clean.dimacs"));
+        compareVariants(loadFormula("EMBToolkit/model.xml"));
     }
 
     @Test
     void gplRunsUntilTimeout() {
-        testTimeout(loadModel("GPL/model.xml"), 10);
+        testTimeout(loadFormula("GPL/model.xml"), 10);
     }
 
     private void testTimeout(IFormula formula, int timeoutSeconds) {
@@ -141,7 +141,7 @@ public class YASATest extends Common {
     }
 
     private void benchmarkCompareSample(String modelPath, int t) {
-        IFormula formula = loadModel(modelPath);
+        IFormula formula = loadFormula(modelPath);
         IComputation<BooleanClauseList> clauses = getClauses(formula);
 
         FeatJAR.log().info("Comparing random sample (10) for %s with t = %d", modelPath, t);
@@ -292,7 +292,7 @@ public class YASATest extends Common {
     }
 
     private void computeCoverageVariants(int t, IComputation<BooleanClauseList> clauses, BooleanSolutionList sample) {
-        BooleanAssignment core = clauses.map(ComputeCoreDeadVariablesSAT4J::new).compute();
+        BooleanAssignment core = clauses.map(ComputeCoreSAT4J::new).compute();
         BooleanAssignment atomic = new BooleanAssignment(clauses.map(ComputeAtomicSetsSAT4J::new).compute().stream()
                 .skip(1)
                 .flatMapToInt(l -> Arrays.stream(l.get(), 1, l.get().length))
@@ -327,10 +327,10 @@ public class YASATest extends Common {
     }
 
     private IComputation<BooleanClauseList> getClauses(IFormula formula) {
-        BooleanRepresentationComputation<IFormula, BooleanClauseList> cnf = async(formula)
+        ComputeBooleanRepresentation<IFormula, BooleanClauseList> cnf = async(formula)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
-                .map(BooleanRepresentationComputation::new);
+                .map(ComputeBooleanRepresentation::new);
         return cnf.map(Computations::getKey);
     }
 }

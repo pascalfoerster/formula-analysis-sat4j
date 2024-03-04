@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -26,7 +26,7 @@ import de.featjar.Common;
 import de.featjar.base.computation.Computations;
 import de.featjar.formula.analysis.bool.BooleanAssignmentList;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
@@ -36,11 +36,11 @@ public class ComputeAtomicSetsTest extends Common {
 
     @Test
     public void gplHas27AtomicSets() {
-        BooleanAssignmentList atomicSets = Computations.of(load("GPL/model.xml"))
+        BooleanAssignmentList atomicSets = Computations.of(loadFormula("GPL/model.xml"))
                 .cast(IFormula.class)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
-                .map(BooleanRepresentationComputation::new)
+                .map(ComputeBooleanRepresentation::new)
                 .map(Computations::getKey)
                 .cast(BooleanClauseList.class)
                 .map(ComputeAtomicSetsSAT4J::new)

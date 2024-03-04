@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -36,15 +36,15 @@ import java.util.Random;
  *
  * @author Sebastian Krieter
  */
-public class ComputeCoreDeadVariablesSAT4J extends ASAT4JAnalysis.Solution<BooleanAssignment> {
+public class ComputeCoreSAT4J extends ASAT4JAnalysis.Solution<BooleanAssignment> {
     protected static final Dependency<BooleanAssignment> VARIABLES_OF_INTEREST =
             Dependency.newDependency(BooleanAssignment.class);
 
-    public ComputeCoreDeadVariablesSAT4J(IComputation<BooleanClauseList> booleanClauseList) {
+    public ComputeCoreSAT4J(IComputation<BooleanClauseList> booleanClauseList) {
         super(booleanClauseList, new ComputeConstant<>(new BooleanAssignment()));
     }
 
-    protected ComputeCoreDeadVariablesSAT4J(ComputeCoreDeadVariablesSAT4J other) {
+    protected ComputeCoreSAT4J(ComputeCoreSAT4J other) {
         super(other);
     }
 

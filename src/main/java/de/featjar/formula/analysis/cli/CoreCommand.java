@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -24,7 +24,7 @@ import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.analysis.mig.ComputeCoreDead;
 import de.featjar.formula.structure.formula.IFormula;
 
@@ -37,7 +37,7 @@ public class CoreCommand extends ASAT4JAnalysisCommand<BooleanAssignment, Boolea
 
     @Override
     public IComputation<BooleanAssignment> newAnalysis(
-            BooleanRepresentationComputation<IFormula, BooleanClauseList> formula) {
+            ComputeBooleanRepresentation<IFormula, BooleanClauseList> formula) {
         return formula.map(Computations::getKey).map(ComputeCoreDead::new);
     }
 

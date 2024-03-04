@@ -6,6 +6,7 @@ plugins {
 dependencies {
     api 'de.featjar:formula'
     api 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
+    implementation testFixtures('de.featjar:formula')
 }
 
 license {

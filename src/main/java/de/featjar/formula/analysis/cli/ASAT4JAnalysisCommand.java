@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -27,7 +27,7 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.IO;
 import de.featjar.formula.analysis.AAnalysisCommand;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.io.FormulaFormats;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.transformer.ComputeCNFFormula;
@@ -69,9 +69,8 @@ public abstract class ASAT4JAnalysisCommand<T, U> extends AAnalysisCommand<T> {
         return newAnalysis(Computations.of(inputFormula)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
-                .map(BooleanRepresentationComputation::new));
+                .map(ComputeBooleanRepresentation::new));
     }
 
-    protected abstract IComputation<T> newAnalysis(
-            BooleanRepresentationComputation<IFormula, BooleanClauseList> formula);
+    protected abstract IComputation<T> newAnalysis(ComputeBooleanRepresentation<IFormula, BooleanClauseList> formula);
 }

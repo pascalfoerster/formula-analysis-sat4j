@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -31,8 +31,8 @@ import de.featjar.Common;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.ComputePresence;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
 import de.featjar.formula.analysis.bool.BooleanSolution;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.transformer.ComputeCNFFormula;
 import de.featjar.formula.transformer.ComputeNNFFormula;
@@ -44,7 +44,7 @@ public class ComputeSolutionTest extends Common {
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
                 .set(ComputeCNFFormula.IS_PLAISTED_GREENBAUM, Boolean.TRUE)
-                .map(BooleanRepresentationComputation::new)
+                .map(ComputeBooleanRepresentation::new)
                 .map(Computations::getKey)
                 .cast(BooleanClauseList.class)
                 .map(ComputeSolutionSAT4J::new)
@@ -74,6 +74,6 @@ public class ComputeSolutionTest extends Common {
 
     @Test
     void gplIsSatisfiable() {
-        assertTrue(hasSolution(load("GPL/model.xml")));
+        assertTrue(hasSolution(loadFormula("GPL/model.xml")));
     }
 }

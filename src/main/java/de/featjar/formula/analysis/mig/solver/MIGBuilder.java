@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -30,7 +30,7 @@ import de.featjar.formula.analysis.RuntimeContradictionException;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanClause;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.sat4j.ComputeCoreDeadVariablesSAT4J;
+import de.featjar.formula.analysis.sat4j.ComputeCoreSAT4J;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class MIGBuilder extends AComputation<ModalImplicationGraph> {
     public static final Dependency<BooleanAssignment> CORE = Dependency.newDependency(BooleanAssignment.class);
 
     public MIGBuilder(IComputation<BooleanClauseList> cnfFormula) {
-        super(cnfFormula, new ComputeCoreDeadVariablesSAT4J(cnfFormula));
+        super(cnfFormula, new ComputeCoreSAT4J(cnfFormula));
     }
 
     protected MIGBuilder(MIGBuilder other) {

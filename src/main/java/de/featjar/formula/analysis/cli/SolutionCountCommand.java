@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 FeatJAR-Development-Team
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
  * This file is part of FeatJAR-formula-analysis-sat4j.
  *
@@ -23,7 +23,7 @@ package de.featjar.formula.analysis.cli;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.BooleanClauseList;
-import de.featjar.formula.analysis.bool.BooleanRepresentationComputation;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.analysis.sat4j.ComputeSolutionCountSAT4J;
 import de.featjar.formula.structure.formula.IFormula;
 import java.math.BigInteger;
@@ -36,7 +36,7 @@ public class SolutionCountCommand extends ASAT4JAnalysisCommand<BigInteger, BigI
     }
 
     @Override
-    public IComputation<BigInteger> newAnalysis(BooleanRepresentationComputation<IFormula, BooleanClauseList> formula) {
+    public IComputation<BigInteger> newAnalysis(ComputeBooleanRepresentation<IFormula, BooleanClauseList> formula) {
         return formula.map(Computations::getKey).map(ComputeSolutionCountSAT4J::new);
     }
 
