@@ -23,14 +23,15 @@ public class PreprocessImGraph extends IndeterminatePreprocess{
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
         BooleanAssignment hiddenVariables = VARIABLES_OF_INTEREST.get(dependencyList);
-        VariableMap mapping = VARIABLE_MAP.get(dependencyList);
         ModalImplicationGraph implicationGraph = IMPLICATION_GRAPH.get(dependencyList);
         ModalImplicationGraph.Visitor visitor = implicationGraph.getVisitor();
         hiddenVariables = new BooleanAssignment(hiddenVariables.removeAll(Arrays.stream(implicationGraph.getCore()).map(Math::abs).toArray()));
         BooleanAssignment finalHiddenVariables = hiddenVariables;
         hiddenVariables = new BooleanAssignment(hiddenVariables.stream().filter((hidden) ->{
-            for(int check :mapping.getVariableIndices().stream().filter(lit->!finalHiddenVariables.contains(lit)).mapToInt(Integer::intValue).toArray()){
-                if(visitor.strongLink(hidden,check)){
+            int[] strongLinkPositive =  implicationGraph.getStrong()[ModalImplicationGraph.getVertexIndex(hidden)];
+            for(int check :strongLinkPositive){
+                int posCheck = Math.abs(check);
+                if(!finalHiddenVariables.containsVariable(posCheck) && visitor.strongLink(hidden,posCheck)){
                     return false;
                 }
             }

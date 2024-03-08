@@ -282,4 +282,7 @@ public class ModalImplicationGraph {
     public int size() {
         return size;
     }
+    public int[][] getStrong (){
+        return strong;
+    }
 }
