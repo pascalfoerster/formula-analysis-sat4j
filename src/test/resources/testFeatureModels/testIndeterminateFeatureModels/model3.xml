@@ -515,5 +515,11 @@
 				</disj>
 			</eq>
 		</rule>
+		<rule>
+			<eq>
+				<var>yf</var>
+				<var>yf</var>
+			</eq>
+		</rule>
 	</constraints>
 </featureModel>

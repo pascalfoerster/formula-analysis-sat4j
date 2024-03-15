@@ -286,7 +286,6 @@ public class ComputeIndeterminateTest extends Common {
                 .set(ComputeBiImplicationFormula.MAXIMUM_CLAUSE_SIZE,4)
                 .compute();
         results.add(new BiImplies(new Literal("m"),new Or(new Literal("e"),new Literal("i"))));
-        results.add(new BiImplies(new Literal("q"),new Or(new Literal("s"), new Literal("t"),new Literal("r"))));
         assertEquals(results.size(),biImpliesList2.size());
         for(BiImplies biImplies: biImpliesList2) {
             assert results.stream().anyMatch(biImplies1 -> biImplies1.equalsTree(biImplies));
@@ -296,6 +295,7 @@ public class ComputeIndeterminateTest extends Common {
         results.add(new BiImplies(new Literal(false,"r"),new Or(new Literal("s"),new Literal("t"),new Literal(false,"q"))));
         results.add(new BiImplies(new Literal(false,"s"),new Or(new Literal("t"),new Literal(false,"q"),new Literal("r"))));
         results.add(new BiImplies(new Literal(false,"t"),new Or(new Literal("s"),new Literal(false,"q"),new Literal("r"))));
+        results.add(new BiImplies(new Literal("q"),new Or(new Literal("s"), new Literal("t"),new Literal("r"))));
         List<BiImplies> biImpliesList3 = new ComputeBiImplicationFormula(cnf,variables.get(3))
                 .set(ComputeBiImplicationFormula.MAXIMUM_CLAUSE_SIZE,4)
                 .compute();

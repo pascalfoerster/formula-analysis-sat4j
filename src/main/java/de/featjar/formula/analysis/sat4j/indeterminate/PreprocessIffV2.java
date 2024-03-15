@@ -91,15 +91,21 @@ public class PreprocessIffV2 extends IndeterminatePreprocessFormula{
     private void checkLiteralIsUnique(Literal literal, IExpression otherExpression, BiImplies biImplies) {
         int id = unwrapVariable(literal,mapping);
         if(hiddenVariables.contains(id)){
-            int[] variables = otherExpression.getVariables().stream().
-                    mapToInt(variable -> getMapping(variable.getName(),mapping))
-                    .filter((variable) ->hiddenVariables.contains(variable) && variable!=id)
-                    .toArray();
-            if(variables.length == 0) {
+            List<Integer> variables =  new ArrayList<>();
+            for(int variableV : otherExpression.getVariables()
+                    .stream()
+                    .mapToInt(variable -> getMapping(variable.getName(),mapping))
+                    .toArray()){
+                if(variableV == id) return;
+                else if (hiddenVariables.containsVariable(variableV)) {
+                    variables.add(variableV);
+                }
+            }
+            if(variables.isEmpty()) {
                 definedHidden.add(id);
                 hiddenVariables = new BooleanAssignment(hiddenVariables.removeAll(id));
             }else {
-                Arrays.stream(variables).forEach(undefinedHidden::add);
+                undefinedHidden.addAll(variables);
                 interestBiImplies.add(biImplies);
             }
         }
