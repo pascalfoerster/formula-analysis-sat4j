@@ -1,12 +1,10 @@
 package de.featjar.formula.analysis.sat4j.indeterminate;
 
-import de.featjar.base.computation.Computations;
-import de.featjar.base.computation.Dependency;
+
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Pair;
 import de.featjar.base.data.Result;
-import de.featjar.base.tree.Trees;
 import de.featjar.formula.analysis.VariableMap;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
 import de.featjar.formula.structure.IExpression;
@@ -14,10 +12,8 @@ import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.And;
 import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Not;
-import de.featjar.formula.structure.formula.connective.Reference;
 import de.featjar.formula.structure.formula.predicate.Literal;
 import de.featjar.formula.structure.term.value.Variable;
-import de.featjar.formula.visitor.CoreDeadSimplifier;
 
 import java.util.*;
 

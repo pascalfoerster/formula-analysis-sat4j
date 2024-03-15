@@ -55,14 +55,13 @@ import org.junit.jupiter.api.Test;
 
 public class ComputeIndeterminateTest extends Common {
 
-    private static ArrayList<IComputation<IFormula>> formulas = new ArrayList<>();
+    private final static ArrayList<IComputation<IFormula>> formulas = new ArrayList<>();
 
-    private static ArrayList<IComputation<IBooleanRepresentation>> clauses= new ArrayList<>();
-    private static ArrayList<VariableMap> variables = new ArrayList<>();
-    private static ArrayList<BooleanAssignment> hiddenVariables = new ArrayList<>();
-    private static ArrayList<BooleanAssignment> coredeadFeatures = new ArrayList<>();
-    private static ArrayList<List<BiImplies>> biImplies = new ArrayList<>();
-    private static ModalImplicationGraph modalImplicationGraph;
+    private static final ArrayList<IComputation<IBooleanRepresentation>> clauses= new ArrayList<>();
+    private static final ArrayList<VariableMap> variables = new ArrayList<>();
+    private static final ArrayList<BooleanAssignment> hiddenVariables = new ArrayList<>();
+    private static final ArrayList<BooleanAssignment> coredeadFeatures = new ArrayList<>();
+    private static final ArrayList<List<BiImplies>> biImplies = new ArrayList<>();
 
 
     @BeforeAll
@@ -82,9 +81,6 @@ public class ComputeIndeterminateTest extends Common {
             biImplies.add(model.getValue().getValue());
 
         }
-        IFormula cnfC = formulas.get(0).map(ComputeNNFFormula::new)
-                .map(ComputeCNFFormula::new).compute();
-
 
         coredeadFeatures.add( new BooleanAssignment(variables.get(1).get("h").get(),-variables.get(1).get("g").get()));
         coredeadFeatures.add( new BooleanAssignment(variables.get(2).get("h").get(),-variables.get(2).get("g").get()));
@@ -196,7 +192,7 @@ public class ComputeIndeterminateTest extends Common {
     }
     @Test
     void preprocessImplicationGraph(){
-        modalImplicationGraph = clauses.get(3)
+        ModalImplicationGraph modalImplicationGraph = clauses.get(3)
                 .cast(BooleanClauseList.class)
                 .map(MIGBuilder::new).compute();
         BooleanAssignment hiddenVariables = new PreprocessImGraph(Computations.of(modalImplicationGraph))
