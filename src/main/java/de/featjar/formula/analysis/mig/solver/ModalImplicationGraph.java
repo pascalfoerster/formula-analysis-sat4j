@@ -21,10 +21,9 @@
 package de.featjar.formula.analysis.mig.solver;
 
 import de.featjar.formula.analysis.RuntimeContradictionException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Adjacency list implementation based on arrays. Intended to use for faster
@@ -219,11 +218,11 @@ public class ModalImplicationGraph {
         }
 
         public boolean strongLink(int literal1, int literal2){
-            int[] matchPos = Arrays.stream(strong[getVertexIndex(literal1)]).filter(n -> Math.abs(n) == literal2).toArray();
-            int[] matchNeg = Arrays.stream(strong[getVertexIndex(-literal1)]).filter(n -> Math.abs(n) == literal2).toArray();
-            if(matchPos.length == 1 && matchNeg.length ==1 && (matchPos[0] + matchNeg[0] == 0) ){
-                return Arrays.stream(strong[getVertexIndex(matchPos[0])]).anyMatch(lit -> lit == literal1)
-                        && Arrays.stream(strong[getVertexIndex(matchNeg[0])]).anyMatch(lit -> lit == -literal1);
+            OptionalInt matchPos = Arrays.stream(strong[getVertexIndex(literal1)]).filter(n -> Math.abs(n) == literal2).findFirst();
+            OptionalInt matchNeg = Arrays.stream(strong[getVertexIndex(-literal1)]).filter(n -> Math.abs(n) == literal2).findFirst();
+            if(matchPos.isPresent() && matchNeg.isPresent() && (matchPos.getAsInt() + matchNeg.getAsInt() == 0) ){
+                return Arrays.stream(strong[getVertexIndex(matchPos.getAsInt())]).anyMatch(lit -> lit == literal1)
+                        && Arrays.stream(strong[getVertexIndex(matchNeg.getAsInt())]).anyMatch(lit -> lit == -literal1);
             }
             return false;
         }
